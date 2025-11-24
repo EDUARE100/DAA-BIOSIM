@@ -1,1 +1,2 @@
-Hola
+- Falta modificar la lista a cola.
+- Función para pasar el grafo a array.
