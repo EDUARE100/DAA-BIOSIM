@@ -1,31 +1,41 @@
 #include "dsa.h"
 #include "biosimlib.h"
-#include <stdio.h>
 #include <glib.h>
 #include <string.h>
 // https://docs.gtk.org/glib/index.html
 // https://developer.ibm.com/tutorials/l-glib/
+/*
+    Correr el archivo en cmd:
+        > con un archivo main momentáneo
+        > gcc -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -pthread dsa.c biosimlib.c main.c -o dsa -lglib-2.0
+*/
 
 /*
-    Nota: ignorar la declaración e inicializacion de lista_territorios ahí, nomás era para guiarme jeje :P
-    (1) Se crea el puntero lista_territorios
-    (2) Se crea un territorio: pondremos new_territorio
-    (3) Se agregan los datos de este territorio
+    > Crear cola se crea de la siguiente manera:
+        - GQueue *cola_territorios = g_queue_new();
+    > Sacar el tamaño de la cola de la sig. manera:
+        - int cola_territorios_length = g_queue_get_length(cola_territorios);
 */
-GList *lista_territorios = NULL;
 
 /*
-    Func insertar_lista_territorios: Inserta territorios al final de la lista_territorios
+    insertar_cola_territorios(GQueue *cola, struct Territorio *territorio): int.
+        - Descripción: Inserta territorio en la cola de territorios, devuelve -1 si no se logró insertar, 1 si se insertó con éxito.
+        - Elementos:
+            > *cola: Cola de territorios, se recibe por parámetro.
+            > *territorio: struct Territorio, se recibe por parámetro.
+        - Nota:
+            > Se utiliza la librería glib y la cola que se encuentra en esta.
+            > Se inserta el territorio al final de la cola (tail).
 */
-void insertar_lista_territorios(GList *lista_territorios, struct Territorio *territorio)
+int insertar_cola_territorios(GQueue *cola, struct Territorio *territorio)
 {
     if(!territorio) {
-        return NULL;
+        return -1;
     }
 
-    lista_territorios = g_list_append(lista_territorios, territorio);
+    g_queue_push_tail(cola, territorio);
 
-    return;
+    return 1;
 }
 
 /*

@@ -15,7 +15,7 @@
 
 /* Funciones */
 // Territorios
-struct Territorios *crear_territorio(int id, char *nombre, int m, struct GrafoPersonas *grafo);
-void insertar_lista_territorios(GList *lista_territorios, struct Territorios *territorio);
+struct Territorio *crear_territorio(int id, char *nombre, int m, struct GrafoPersonas *grafo);
+int insertar_cola_territorios(GQueue *cola, struct Territorio *territorio);
 
 #endif

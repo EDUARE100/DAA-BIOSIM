@@ -17,7 +17,7 @@
             - Descripción: Paciente que se encontraba infectado, pero falleció.
 
 */
-enum estado
+enum Estado
 {
     SUSCEPTIBLE,
     INFECTADO,
@@ -68,7 +68,7 @@ typedef struct Persona
     int grado_inicial;    /* Esto no se a que se refiere lol, suponga es la medida estádistica ya predispuesta
        a la hora de insertar los datos. ACTUALIZACION. Es la cantidad de enlaces o aristas cuando recien se inserta el nodo */
     float riesgo_inicial;
-    enum estado;
+    enum Estado estado;
     struct Cepa *cepa_actual;
 
 } Persona;

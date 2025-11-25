@@ -1,2 +1,3 @@
-- Falta modificar la lista a cola.
+DONE! Falta modificar la lista a cola.
+- Agregar la descripción en la función que me falta.
 - Función para pasar el grafo a array.
