@@ -18,10 +18,10 @@ for territorio_id in range(num_territorios):
         
         # Generar datos numéricos
         # Grado: float entre 0.0 y 100.0 (simulando conectividad)
-        grado = round(random.uniform(0, 100), 2)
+        grado = round(random.uniform(0, 25))
         
         # Riesgo: double entre 0.0 y 1.0 (probabilidad)
-        riesgo = round(random.uniform(0, 1), 6)
+        riesgo = round(random.uniform(0, 1), 4)
         
         # Imprimir fila CSV
         print(f"{id_persona},{nombre_completo},{territorio_id},{grado},{riesgo}")

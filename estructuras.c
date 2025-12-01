@@ -11,13 +11,30 @@
 #define MAX_cepas 50 //Número máximo de cepas
 #define MAX_semillas 10 //Número de semillas iniciales
 
+typedef enum{
+    SANO, // 0: Es susceptible a infectarse, sano por el momento
+    INFECTADO, // 1: Si está infectado
+    RECUPERADO, // 2: Si ya está recuperado
+    FALLECIDO // 3: Si ya está fallecido :(. Por el momento si está en ese estado no se eliminará de la BD
+}estado;
+
+const char *nombres_estados[] = {
+    "Sano",
+    "Infectado",
+    "Recuperado",
+    "Fallecido"
+};
+
 typedef struct persona{
     int id;
     char nombre[50];
     int territorio_id; //Para tener referencia inicial a la hora de realizar los algoritmos
-    float grado_inicial;
+    int grado_inicial;
     double riesgo_inicial; //Lo puse como double porque al ser tantas personas osea muchos datos, nos evitamos de inconsistencias en el cálculo de probabilidades, aumenta un poco el espacio de memoria en MB pero no es mucho.
-    int infectado; // 0 si es no infectado, 1 si si lo es
+    //gradp inicial: Número promedio de contactos de una persona
+    //riesgo inicial: vulnerabilidad de la personas. Vulnerabilidad individual
+    estado estado; // 0 si es no infectado, 1 si si lo es
+    int tiempo_contagio; //Dias de contagiado. Tipo de datos especifico para el subproblema 1, ordenamiento de tiempo_infeccion ASC
 }persona;
 
 typedef struct territorio{
@@ -40,7 +57,7 @@ typedef struct cepa{
 
 typedef struct semilla{
     int persona_id; //Pacientes 0
-    int t0; //Tiempo inicla de contagio
+    int t0; //Tiempo iniclal de contagio
     int cepa_id; //Tipo de cepa que tiene
 }semilla;
 
@@ -91,7 +108,7 @@ void inicializar_sistema(sistema *sistema){
 }
 
 // Solo muestra las conexiones
-void imprimir_matrices(sistema sistema){
+void imprimir_matrices(sistema *sistema){
     
     printf("\nMatriz de territorios 20x20\n");
     
@@ -99,7 +116,7 @@ void imprimir_matrices(sistema sistema){
     {
         for (int j = 0; j < MAX_Territorios; j++)
         {
-            printf("%2.f ",sistema.grafoterritorios[i][j]);
+            printf("%2.f ",sistema->grafoterritorios[i][j]);
         }
         printf("\n");
     }
@@ -112,7 +129,7 @@ void imprimir_matrices(sistema sistema){
         {
             for (int p2 = 0; p2 < MAX_Personas_por_territorio; p2++)
             {
-                printf("%2.f ",sistema.territorios[t].grafopersonas[p1][p2]);
+                printf("%2.f ",sistema->territorios[t].grafopersonas[p1][p2]);
             }
             printf("\n");
         }
@@ -120,24 +137,24 @@ void imprimir_matrices(sistema sistema){
     }
 }
 
-void mostrar_persona(sistema sistema){
-    if (sistema.numterritorios > MAX_Territorios)
+void mostrar_persona(sistema *sistema){
+    if (sistema->numterritorios > MAX_Territorios)
     {
         printf("Territorio no existente");
         return;
     }
     
-    for (int i = 0; i < sistema.numterritorios; i++)
+    for (int i = 0; i < sistema->numterritorios; i++)
     {
-        printf("Territorio: %-15s [ID: %d] [Personas: %d]\n",sistema.territorios[i].nombre, sistema.territorios[i].territorio_id, sistema.territorios[i].M);
+        printf("Territorio: %-15s [ID: %d] [Personas: %d]\n",sistema->territorios[i].nombre, sistema->territorios[i].territorio_id, sistema->territorios[i].M);
 
-        if (sistema.territorios[i].M == 0)
+        if (sistema->territorios[i].M == 0)
         {
             printf("Sin personas registradas en el territorio\n\n");
         }else{
-            for (int j = 0; j < sistema.territorios[i].M; j++)
+            for (int j = 0; j < sistema->territorios[i].M; j++)
             {
-                printf("[ID: %d] %-20s[Grado: %.3f] [Riesgo_ %.3f]\n",sistema.territorios[i].personas[j].id, sistema.territorios[i].personas[j].nombre, sistema.territorios[i].personas[j].grado_inicial, sistema.territorios[i].personas[j].riesgo_inicial);
+                printf("[ID: %d] %-20s[Grado: %2d] [Riesgo_init: %.3f] [Estado: %s]\n",sistema->territorios[i].personas[j].id, sistema->territorios[i].personas[j].nombre, sistema->territorios[i].personas[j].grado_inicial, sistema->territorios[i].personas[j].riesgo_inicial, nombres_estados[sistema->territorios[i].personas[j].estado]);
             }
             printf("\n");
         }
@@ -147,7 +164,7 @@ void mostrar_persona(sistema sistema){
 }
 
 
-void addpersonas(sistema *sistema, int territorio_id, int id, const char *nombre, double grado_inicial, double riesgo_inicial){
+void addpersonas(sistema *sistema, int territorio_id, int id, const char *nombre, int grado_inicial, double riesgo_inicial){
     //Validamos si existe el territorio
     if (territorio_id >= sistema->numterritorios || territorio_id < 0)
     {
@@ -166,14 +183,14 @@ void addpersonas(sistema *sistema, int territorio_id, int id, const char *nombre
     strcpy(sistema->territorios[territorio_id].personas[indice].nombre, nombre);
     sistema->territorios[territorio_id].personas[indice].grado_inicial = grado_inicial;
     sistema->territorios[territorio_id].personas[indice].riesgo_inicial = riesgo_inicial;
-    sistema->territorios[territorio_id].personas[indice].infectado = 0;
+    sistema->territorios[territorio_id].personas[indice].estado = SANO;
 
     sistema->territorios[territorio_id].M++; //Se incrementa M osea numPersona por cada inserción que se haga en el indice del territorio específico, esto evitando que se acumulen todos las personas en un mismo contador.
 }
 
-void mostrar_territorios(sistema sistema){
+void mostrar_territorios(sistema *sistema){
     //Validamos si hay territorios existentes
-    if (sistema.numterritorios == 0)
+    if (sistema->numterritorios == 0)
     {
         printf("No hay territorios a imprimir");
         return;
@@ -181,15 +198,15 @@ void mostrar_territorios(sistema sistema){
 
     printf("----------------Territorios agregados-----------\n");
     
-    if (sistema.numterritorios == 0)
+    if (sistema->numterritorios == 0)
     {
         printf("No hay territorios agregados");
         return;
     }
     printf("--  #  Nombre Territorio     ID      M  \n");
-    for (int i = 0; i < sistema.numterritorios; i++)
+    for (int i = 0; i < sistema->numterritorios; i++)
     {
-        printf("-- [%2d] %-16s (ID: %2d, Personas: %2d)\n",i,sistema.territorios[i].nombre,sistema.territorios[i].territorio_id ,sistema.territorios[i].M);
+        printf("-- [%2d] %-16s (ID: %2d, Personas: %2d)\n",i,sistema->territorios[i].nombre,sistema->territorios[i].territorio_id ,sistema->territorios[i].M);
     }
     printf("------------------------------------------------\n");
 }

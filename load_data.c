@@ -73,11 +73,11 @@ int leer_personas_csv(sistema *sistema, const char *filename){
         int id;
         int territorio_id;
         char nombre[50];
-        float grado_inicial;
+        int grado_inicial;
         double riesgo_inicial;
         int infectado;
 
-        if (sscanf(line, "%d,%[^,],%d,%f,%lf,%d", &id, nombre, &territorio_id, &grado_inicial, &riesgo_inicial, &infectado)==5){
+        if (sscanf(line, "%d,%[^,],%d,%d,%lf,%d", &id, nombre, &territorio_id, &grado_inicial, &riesgo_inicial, &infectado)==5){
             
             if (territorio_id >= sistema->numterritorios)
             {
@@ -99,7 +99,8 @@ int leer_personas_csv(sistema *sistema, const char *filename){
             sistema->territorios[territorio_id].personas[idx].territorio_id = territorio_id;
             sistema->territorios[territorio_id].personas[idx].grado_inicial = grado_inicial;
             sistema->territorios[territorio_id].personas[idx].riesgo_inicial = riesgo_inicial;
-            sistema->territorios[territorio_id].personas[idx].infectado = 0;
+            sistema->territorios[territorio_id].personas[idx].estado = SANO;
+            sistema->territorios[territorio_id].personas[idx].tiempo_contagio = -1;
 
             sistema->territorios[territorio_id].M++;
             total_personas++;
