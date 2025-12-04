@@ -4,7 +4,7 @@ nombres = ["Juan", "Maria", "Pedro", "Ana", "Luis", "Carmen", "Jose", "Laura", "
 apellidos = ["Garcia", "Hernandez", "Lopez", "Martinez", "Gonzalez", "Rodriguez", "Perez", "Sanchez", "Ramirez", "Flores", "Gomez", "Torres", "Diaz", "Vasquez", "Cruz", "Morales", "Ruiz", "Jimenez", "Reyes", "Castillo"]
 
 num_territorios = 20
-personas_por_territorio = 25
+personas_por_territorio = 15
 
 
 for territorio_id in range(num_territorios):
@@ -18,7 +18,7 @@ for territorio_id in range(num_territorios):
         
         # Generar datos numéricos
         # Grado: float entre 0.0 y 100.0 (simulando conectividad)
-        grado = round(random.uniform(0, 25))
+        grado = round(random.uniform(0, 15))
         
         # Riesgo: double entre 0.0 y 1.0 (probabilidad)
         riesgo = round(random.uniform(0, 1), 4)

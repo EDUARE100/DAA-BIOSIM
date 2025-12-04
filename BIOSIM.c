@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include "estructuras.h"
 #include "load_data.h"
+#include "AlgoritmosO.h"
+#include "DFS.h"
 
-void conexiones_territorios(sistema *sistema, int u_territorio, int v_territorio, float distancia_peso);
 
 void menu(sistema sistema);
 
@@ -13,12 +14,14 @@ int main(int argc, char const *argv[])
     sistema sistema;
 
     inicializar_sistema(&sistema);
-    int territorios = leer_territorios_csv(&sistema,"territorios.csv");
-    int personas = leer_personas_csv(&sistema,"personas.csv");
+    leer_territorios_csv(&sistema,"territorios.csv");
+    leer_personas_csv(&sistema,"personas.csv");
+    leer_conexiones_territorios(&sistema, "conexiones_t.csv");
+    leer_cepas_csv(&sistema,"cepas.csv");
+    leer_semillas_csv(&sistema,"semillas.csv");
+    generar_red_contactos(&sistema);
     menu(sistema);
 
-    //Nota, imprimir matrices se limito a 5 a propósito pero nada más se cambia en estructuras.c y ya
-    //imprimir_matrices(sistema);
     return 0;
 }
 
@@ -32,7 +35,11 @@ void menu(sistema sistema){
         printf("2.- Mostrar Personas\n");
         printf("3.- Mostrar Conexiones Territorios\n");
         printf("4.- Mostrar Conexiones Personas\n");
-        printf("5.- SUBPROBLEMA 1. Ordenamientos NLOGN\n");
+        printf("5.- Mostrar Cepas\n");
+        printf("6.- Mostrar Semillas\n");
+        printf("7.- Insert\n");
+        printf("8.- SUBPROBLEMA 1. Ordenamientos NLOGN\n");
+        printf("9.- SUBPROBLEMA 2. Deteccion de Brotes (DFS)\n");
         printf("0.- Salir\n");
         printf("Ingrese una opcion: ");
         scanf(" %d",&opcion);
@@ -51,10 +58,26 @@ void menu(sistema sistema){
             system("cls");
             break;
         case 3:
+                matriz_conexiones_territorios(&sistema);
+                system("pause");
+                system("cls");
             break;
         case 4:
+                matriz_conexiones_personas(&sistema);
+                system("pause");
+                system("cls");
             break;
         case 5:
+                mostrar_cepas(&sistema);
+                system("pause");
+                system("cls");
+            break;
+        case 6:
+                mostrar_semillas(&sistema);
+                system("pause");
+                system("cls");
+            break;
+        case 8:
             system("cls");
             int opcion5 = -1;
             while (opcion5 != 0)
@@ -63,7 +86,6 @@ void menu(sistema sistema){
                 printf("1.- MergeSort\n");
                 printf("2.- QuickSort\n");
                 printf("3.- HeapSort\n");
-                printf("4.- En desarrollo\n");
                 printf("0.- Salir\n");
                 printf("Ingrese una opcion: ");
                 scanf(" %d", &opcion5);
@@ -75,7 +97,7 @@ void menu(sistema sistema){
                     break;
 
                 case 2:
-                        
+                        quicksort_def(&sistema);
                         system("pause");
                         system("cls");
                     break;
@@ -87,33 +109,16 @@ void menu(sistema sistema){
             }
             
             break;
+
+        case 9:
+            detectar_brotes(&sistema);
+            system("pause");
+            system("cls");
+            break;
         default:
             break;
         }
         
     }
 
-}
-
-
-
-
-void conexiones_territorios(sistema *sistema, int u_territorio, int v_territorio, float distancia_peso){
-    if (u_territorio <0 || v_territorio >= MAX_Territorios || v_territorio < 0 || u_territorio >= MAX_Territorios)
-    {
-        printf("Error: ID's fueras de los limites de territorios");
-        return;
-    }
-
-    
-    if (u_territorio == v_territorio)
-    {
-        printf("Error: Un territorio no puede conectarse consigo mismo");
-        return;
-    }
-
-    //Hacemos de un grafo dirigido osea que ambas conexiones de A - B sean iguales, se dice conexion de territorios tomado como Kilometros
-    sistema->grafoterritorios[u_territorio][v_territorio] = distancia_peso;
-    sistema->grafoterritorios[v_territorio][u_territorio] = distancia_peso;
-      
 }

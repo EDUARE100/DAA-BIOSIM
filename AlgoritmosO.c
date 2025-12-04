@@ -3,13 +3,6 @@
 
 #include "estructuras.h"
 
-//Recibe como parametros la direccion de memoria del grupo de personas del territorio especifico y el conjunto de personas de ese territorio osea la cantidad
-void funcion_quicksort(persona arr[], int n){
-    if (n>1) //Si la cantidad ed personas es mayor que 1 entonces haremos quicksort, si solo es 1 persona pues no haremos ningun ordenamiento
-    {
-        quicksort(arr, 0, n-1);
-    }
-}
 
 int condition(persona a, persona b){
 
@@ -66,7 +59,7 @@ int partition(persona arr[], int low, int high){
 }
 
 
-//QuickSort version Hoare
+//QuickSort version Lomuto
 void quicksort(persona arr[], int low, int high){
     if (low < high)
     {
@@ -77,16 +70,24 @@ void quicksort(persona arr[], int low, int high){
     }
 }
 
-void quicksort_def(sistema sistema){
-    for (int  i = 0; i < sistema.numterritorios; i++)
+//Recibe como parametros la direccion de memoria del grupo de personas del territorio especifico y el conjunto de personas de ese territorio osea la cantidad
+void funcion_quicksort(persona arr[], int n){
+    if (n>1) //Si la cantidad ed personas es mayor que 1 entonces haremos quicksort, si solo es 1 persona pues no haremos ningun ordenamiento
+    {
+        quicksort(arr, 0, n-1);
+    }
+}
+
+void quicksort_def(sistema *sistema){
+    for (int  i = 0; i < sistema->numterritorios; i++)
         {
-            int n = sistema.territorios[i].M;
+            int n = sistema->territorios[i].M;
             persona *copia_temp = (persona*)malloc(sizeof(persona) * n);
             // Memcpy, funcion para copiar los datos de un array a otro, destino, origen, tamaño en bytes
-            memcpy(copia_temp, sistema.territorios[i].personas, n * sizeof(persona));
+            memcpy(copia_temp, sistema->territorios[i].personas, n * sizeof(persona));
             funcion_quicksort(copia_temp, n);
 
-            printf("\nTerritorio: %s)\n", sistema.territorios[i].nombre);
+            printf("\nTerritorio: %s)\n", sistema->territorios[i].nombre);
             printf("%-20s | %-15s | %s\n", "Nombre", "Dia Contagio", "Estado Real");
             printf("---------------------------------------------------\n");
             // Aunque parezca que se engloba a la función quicksort en una función con complejidad O(N^2), sigue siendo nlogn la complejidad puesto que el segundo for no está iterando conforme a la cantidad de territorios como el for externo sino que itera conforme a el numero de personas dentro del territorio, haciendo de manera lineal ambos ciclos for puesto que actuan para distintos propositos y no moverse sobre un mismo eje. Complejidad nlogn.
