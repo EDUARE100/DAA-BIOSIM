@@ -33,7 +33,7 @@ void DFS(sistema *sistema, int territorio_id, int persona_id, int *visitados, in
 
             // Solo entramos si es infectado y NO ha sido visitado
             if (esta_infectado && !ya_visitado) {
-                DFS_buscar_brote(sistema, territorio_id, vecino, visitados, miembros_brote, contador);
+                DFS(sistema, territorio_id, vecino, visitados, miembros_brote, contador);
             }
         }
     }
