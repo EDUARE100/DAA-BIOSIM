@@ -1,8 +1,115 @@
-#ifndef AlgoritmosO_H
-#define AlgoritmosO_H
 
 #include "estructuras.h"
+#include "AlgoritmosO.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
+/* merge sort */
+int ordenamiento_por_riesgo_desc(sistema *s)
+{
+    if(!s || s->numterritorios == 0) {
+        return -1;
+    }
+
+    puts("\n======================================================");
+    puts("   REPORTE DE PERSONAS ORDENADO POR RIESGO INICIAL   ");
+    puts("======================================================");
+    puts("Formato: Descendiente");
+
+    for(int i = 0; i < s->numterritorios; i++) {
+        
+        int n = s->territorios[i].M;
+
+        /* Si no hay personas, salta el territorio */
+        if(n == 0) {
+            printf("\nTerritorio: %s\n", s->territorios[i].nombre);
+            printf("(Sin personas)\n");
+            continue;
+        }
+
+        persona *copy = (persona *)malloc(n * sizeof(persona));
+        if(!copy) {
+            return -1;
+        }
+
+        /* Copiar los datos del array original al array temporal */
+        memcpy(copy, s->territorios[i].personas, n * sizeof(persona));
+
+        /* Ordenamiento de la copia */
+        merge_sort(copy, 0, n - 1);
+
+        /* Se imprime el reporte */
+        printf("\nTerritorio: %s\n", s->territorios[i].nombre);
+        printf("%-20s | %-15s | %-15s\n", "Nombre", "Riesgo Inicial", "Estado Actual");
+        printf("------------------------------------------------------\n");
+
+        for(int j = 0; j < n; j++) {
+            
+            char riesgo_str[10];
+            sprintf(riesgo_str, "%.3f", copy[j].riesgo_inicial);
+
+            printf("%-20s | %-15s | %-15s\n",
+                    copy[j].nombre,
+                    riesgo_str,
+                    nombres_estados[copy[j].estado]
+            );
+        }
+
+        free(copy);
+    }
+
+    return 1;
+}
+
+/* Riesgo DESC */
+void merge(persona *p, int left, int center, int right)
+{
+    int n = right - left + 1;
+    persona *temp = (persona *)malloc(n * sizeof(persona));
+    if(!temp) {
+        return;
+    }
+    
+    int i = left, j = center + 1, x = 0;
+    
+    // mezclar
+    while(i <= center && j <= right) {
+        if(p[i].riesgo_inicial > p[j].riesgo_inicial) {
+            temp[x++] = p[i++];
+        } else {
+            temp[x++] = p[j++];
+        }     
+    }
+
+    // vaciar
+    while(i <= center) {
+        temp[x++] = p[i++];
+    }
+        
+    while(j <= right) {
+        temp[x++] = p[j++];
+    }
+               
+    for(x = 0, i = left; i <= right; i++, x++) {
+        p[i] = temp[x]; 
+    }
+    
+    free(temp);
+}
+
+void merge_sort(persona *p, int left, int right)
+{
+    if(left >= right) {
+        return;
+    }
+
+    int center = (left + right) / 2;
+
+    merge_sort(p, left, center);
+    merge_sort(p, center + 1, right);
+    merge(p, left, center, right);
+}
 
 int condition(persona a, persona b){
 
@@ -104,5 +211,3 @@ void quicksort_def(sistema *sistema){
             free(copia_temp); //LIberamos la copia del array temporal
         }
 }
-
-#endif

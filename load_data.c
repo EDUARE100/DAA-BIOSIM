@@ -1,9 +1,10 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "load_data.h"
 
-#define MAX_line 1000 //Definimos la logintud máxima de cada línea
+#define MAX_line 1000 //Definimos la longitud máxima de cada línea
 
 int leer_territorios_csv(sistema *sistema, const char *filename){
     FILE *file = fopen(filename, "r");

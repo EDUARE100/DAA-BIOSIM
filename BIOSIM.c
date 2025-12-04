@@ -82,7 +82,7 @@ void menu(sistema sistema){
             int opcion5 = -1;
             while (opcion5 != 0)
             {
-                printf("Ordenamientos NLOGN\n");  
+                printf("\nOrdenamientos NLOGN\n");  
                 printf("1.- MergeSort\n");
                 printf("2.- QuickSort\n");
                 printf("3.- HeapSort\n");
@@ -93,7 +93,9 @@ void menu(sistema sistema){
                 switch (opcion5)
                 {
                 case 1:
-
+                    if(ordenamiento_por_riesgo_desc(&sistema) == -1) {
+                        puts("Ordenamiento fallido.");
+                    }
                     break;
 
                 case 2:

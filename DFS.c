@@ -1,8 +1,8 @@
-#ifndef AlgoritmosFase2_H
-#define AlgoritmosFase2_H
 
 #include "estructuras.h"
+#include "DFS.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void DFS(sistema *sistema, int territorio_id, int persona_id, int *visitados, int *miembros_brote, int *contador) {
     
@@ -78,5 +78,3 @@ void detectar_brotes(sistema *sistema) {
     
     if (total_brotes_global == 0) printf("\nNo hay infectados activos.\n");
 }
-
-#endif
