@@ -5,6 +5,7 @@
 #include "AlgoritmosO.h"
 #include "DFS.h"
 
+// gcc BIOSIM.c load_data.c AlgoritmosO.c DFS.c estructuras.c -o BIOSIM
 
 void menu(sistema sistema);
 

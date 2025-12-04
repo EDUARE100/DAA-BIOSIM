@@ -5,18 +5,31 @@
 #include <string.h>
 #include <stdio.h>
 
-/* merge sort */
+/*
+ * @brief Genera e imprime un reporte de personas ordenado por 'riesgo_inicial'
+ *        de forma descendente, territorio por territorio.
+ *
+ * NOTA: Esta función es NO DESTRUCTIVA, ya que opera sobre una copia temporal
+ * de los datos de cada territorio.
+ *
+ * @param s     Puntero a la estructura del sistema completo.
+ * @return int  Retorna 1 si el reporte se generó con éxito, -1 en caso de error
+ * (ej. error de asignación de memoria).
+ */
 int ordenamiento_por_riesgo_desc(sistema *s)
 {
+    // Verificación de puntero y existencia de territorios.
     if(!s || s->numterritorios == 0) {
         return -1;
     }
 
+    // Imprimir encabezado general del reporte.
     puts("\n======================================================");
     puts("   REPORTE DE PERSONAS ORDENADO POR RIESGO INICIAL   ");
     puts("======================================================");
     puts("Formato: Descendiente");
 
+    // Itera sobre cada territorio en el sistema.
     for(int i = 0; i < s->numterritorios; i++) {
         
         int n = s->territorios[i].M;
@@ -28,18 +41,20 @@ int ordenamiento_por_riesgo_desc(sistema *s)
             continue;
         }
 
+        // 1. Asignación y verificación de memoria para la copia temporal.
         persona *copy = (persona *)malloc(n * sizeof(persona));
         if(!copy) {
+            // Falla en la asignación: retorna error.
             return -1;
         }
 
-        /* Copiar los datos del array original al array temporal */
+        // 2. Copiar los datos del array original al array temporal
         memcpy(copy, s->territorios[i].personas, n * sizeof(persona));
 
-        /* Ordenamiento de la copia */
+        // 3. Ordenamiento de la copia: se aplica Merge Sort
         merge_sort(copy, 0, n - 1);
 
-        /* Se imprime el reporte */
+        // 4. Se imprime el reporte del territorio ordenado
         printf("\nTerritorio: %s\n", s->territorios[i].nombre);
         printf("%-20s | %-15s | %-15s\n", "Nombre", "Riesgo Inicial", "Estado Actual");
         printf("------------------------------------------------------\n");
@@ -47,67 +62,108 @@ int ordenamiento_por_riesgo_desc(sistema *s)
         for(int j = 0; j < n; j++) {
             
             char riesgo_str[10];
+            // Formatear el valor double de riesgo a una cadena para alineación.
             sprintf(riesgo_str, "%.3f", copy[j].riesgo_inicial);
 
             printf("%-20s | %-15s | %-15s\n",
                     copy[j].nombre,
                     riesgo_str,
+                    // Acceder al array global de estados.
                     nombres_estados[copy[j].estado]
             );
         }
 
+        // 5. Liberación de memoria
         free(copy);
     }
 
     return 1;
 }
 
-/* Riesgo DESC */
+/*
+ * @brief Implementa el paso de fusión del algoritmo Merge sort.
+ *        Esta función toma dos sub-arrays adyacentes (left...center y center + 1...right)
+ *        y los fusiona en un solo array ordenado en el segmento 'p[left...right]'.
+ *        El ordenamiento se realiza de forma DESCENDENTE basado en 'riesgo_inicial'.
+ *
+ * @param p      Puntero al array de estructuras 'persona' que contiene los datos.
+ *               Es el array que se modificará al final de la fusión.
+ * @param left   Índice inicial del primer sub-array.
+ * @param center Índice final del primer sub-array.
+ * @param right  Índice final del segundo sub-array.
+ * @return void
+ */
 void merge(persona *p, int left, int center, int right)
 {
+    // Calcula el número de elementos en el segmento a fusionar.
     int n = right - left + 1;
+    // Asigna memoria dinámica para el array temporal (copia auxiliar).
     persona *temp = (persona *)malloc(n * sizeof(persona));
+    // Verificación de asignación de memoria.
     if(!temp) {
         return;
     }
     
-    int i = left, j = center + 1, x = 0;
+    int i = left, j = center + 1, x = 0; // i: índice izquierdo, j: índice derecho, x: índice temporal
     
-    // mezclar
+    // Fase 1: Mezclar los dos sub-arrays
+    // Itera mientras queden elementos en ambas mitades.
     while(i <= center && j <= right) {
+        // [COMPARACIÓN CLAVE]: Ordenamiento DESCENDENTE (mayor riesgo va primero).
         if(p[i].riesgo_inicial > p[j].riesgo_inicial) {
-            temp[x++] = p[i++];
+            temp[x++] = p[i++]; // Copia el elemento de mayor riesgo (el izquierdo).
         } else {
-            temp[x++] = p[j++];
+            temp[x++] = p[j++]; // Copia el elemento de mayor riesgo (el derecho o igual).
         }     
     }
 
-    // vaciar
+    // Fase 2: Vaciar los elementos restantes de la sub-lista izquierda
     while(i <= center) {
         temp[x++] = p[i++];
     }
-        
+    
+    // Fase 3: Vaciar los elementos restantes de la sub-lista derecha
     while(j <= right) {
         temp[x++] = p[j++];
     }
-               
+    
+    // Fase 4: Copiar los elementos ordenados del array temporal de vuelta al array original 'p'
     for(x = 0, i = left; i <= right; i++, x++) {
         p[i] = temp[x]; 
     }
     
+    // Liberar la memoria asignada al array temporal para evitar fugas.
     free(temp);
 }
 
+/*
+ * @brief Implementa el algoritmo de ordenamiento Merge Sort de forma recursiva.
+ *        Divide el array de personas en mitades hasta que cada sub-array contiene
+ *        un solo elemento. Luego llama a 'merge' para fusionar las mitades de forma
+ *        ordenada.
+ *
+ * @param p     Puntero al array de estructuras 'persona' que se desea ordenar.
+ * @param left  Índice de inicio del segmento del array.
+ * @param right Índice de fin del segmento del array.
+ * @return void
+ */
 void merge_sort(persona *p, int left, int right)
 {
+    // Caso base: Si el segmento tiene 0 o 1 elemento, se considera ordenado.
     if(left >= right) {
         return;
     }
 
+    // Calcular el punto central para dividir el array.
     int center = (left + right) / 2;
 
+    // 1. Divide: Llamada recursiva a la mitad izquierda.
     merge_sort(p, left, center);
+
+    // 2. Divide: Llamada recursiva a la mitad derecha.
     merge_sort(p, center + 1, right);
+
+    // 3. Combina: Fusión y ordenamiento de las dos mitades.
     merge(p, left, center, right);
 }
 
