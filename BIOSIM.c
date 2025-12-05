@@ -10,6 +10,7 @@
 #include "Animacion.h"
 
 // gcc BIOSIM.c load_data.c AlgoritmosO.c DFS.c estructuras.c Propagacion.c hash.c Animacion.c -o BIOSIM -lfreeglut -lopengl32 -lglu32
+// linux: gcc BIOSIM.c load_data.c AlgoritmosO.c DFS.c estructuras.c Propagacion.c hash.c Animacion.c -o BIOSIM -lGL -lGLU -lglut -lm
 
 TablaHash bd; //Variable global para el almacenamiento O(1) para ersonas y cepas
 void menu(sistema *sistema);
@@ -224,6 +225,9 @@ void menu(sistema *sistema){
         case 13:
             break;
         case 14:
+            if(clustering_cepas(sistema) == -1) {
+                puts("Ordenamiento fallido.");
+            }
             break;
         case 15:
             system("cls");

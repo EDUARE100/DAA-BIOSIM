@@ -544,7 +544,8 @@ void buscar_cluster_beta(trienode *root, char *prefijo_beta, sistema *s)
 }
 
 /* Función wrapper para construir todo el Trie desde el sistema */
-trienode* construir_clustering_betas(sistema *s) {
+trienode* construir_clustering_betas(sistema *s)
+{
     trienode *root = crear_nodo();
     for (int i = 0; i < s->numcepas; i++) {
         // Insertamos usando el índice 'i' como referencia rápida
@@ -553,7 +554,8 @@ trienode* construir_clustering_betas(sistema *s) {
     return root;
 }
 
-void mostrar_agrupamiento_automatico(trienode *root, sistema *s) {
+void mostrar_agrupamiento_automatico(trienode *root, sistema *s)
+{
     printf("\n=== CLUSTERING AUTOMÁTICO POR NIVELES DE PROPAGACIÓN ===\n");
 
     // 1. Acceder a la rama "0" -> "."
