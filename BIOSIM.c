@@ -4,8 +4,9 @@
 #include "load_data.h"
 #include "AlgoritmosO.h"
 #include "DFS.h"
+#include "Propagacion.h"
 
-// gcc BIOSIM.c load_data.c AlgoritmosO.c DFS.c estructuras.c -o BIOSIM
+// gcc BIOSIM.c load_data.c AlgoritmosO.c DFS.c estructuras.c Propagacion.c -o BIOSIM
 
 void menu(sistema sistema);
 
@@ -41,6 +42,7 @@ void menu(sistema sistema){
         printf("7.- Insert\n");
         printf("8.- SUBPROBLEMA 1. Ordenamientos NLOGN\n");
         printf("9.- SUBPROBLEMA 2. Deteccion de Brotes (DFS)\n");
+        printf("10. SUBPROBLEMA 3. Calcular la expansion Paso a Paso (>= nlogn)\n");
         printf("0.- Salir\n");
         printf("Ingrese una opcion: ");
         scanf(" %d",&opcion);
@@ -115,6 +117,24 @@ void menu(sistema sistema){
 
         case 9:
             detectar_brotes(&sistema);
+            system("pause");
+            system("cls");
+            break;
+
+        case 10:
+            system("cls");
+            int dias = 0;
+            printf("\nSimulación de Expansion\n");
+            printf("Ingrese los dias de simulacion: ");
+            scanf(" %d", &dias);
+
+            if(dias <= 0){
+                printf("Error. La cantidad de dias debe ser mayor a 0\n");
+                return;
+            }else
+            {
+                simulacion(&sistema, dias);
+            }
             system("pause");
             system("cls");
             break;

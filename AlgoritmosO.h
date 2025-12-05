@@ -7,7 +7,6 @@
 void merge(persona *p, int left, int center, int right);
 void merge_sort(persona *p, int left, int right);
 int ordenamiento_por_riesgo_desc(sistema *s);
-int mergesort_ordenar_personas(territorio *t);
 
 void quicksort(persona arr[], int low, int high);
 void quicksort_def(sistema *sistema);

@@ -15,3 +15,8 @@ p = Beta(cepa) * Peso de conexión de personas * riesgo_inicial del vecino indiv
 Cada infectado tiene una probabilidad de morir(letalidad) o recuperarse(gamma)
 
 */
+
+#include "estructuras.h"
+
+int indice_cepa(sistema *sistema, int cepa_id);
+void simulacion(sistema *sistema, int dias);
