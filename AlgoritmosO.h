@@ -31,6 +31,27 @@ void push_min_heap(heap *h, persona dato);
 persona pop_min_heap(heap *h);
 int ordenamiento_por_nombre_asc(sistema *s);
 
+/* funciones: dijkstra */
+typedef struct nodopq {
+    int nodo_id;
+    double probabilidad;
+} nodopq;
+
+typedef struct priorityqueue {
+    nodopq *nodos;
+    int tamano;
+    int capacidad;
+} priorityqueue;
+
+void swap_nodes(nodopq *a, nodopq *b);
+priorityqueue *crear_pq(int capacidad);
+void push_pq(priorityqueue *pq, int id, double prob);
+nodopq pop_pq(priorityqueue *pq);
+int es_vacia_pq(priorityqueue *pq);
+void liberar_pq(priorityqueue *pq);
+void buscar_ruta_critica(sistema *s, int id_origen, int id_destino);
+void menu_busqueda_ruta_critica(sistema *s);
+
 /* funciones: greedy*/
 void minimizar_riesgo_greedy(sistema *s, int terr_id, double riesgo_target);
 int comparar_por_riesgo_desc(const void *a, const void *b) ;

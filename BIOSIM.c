@@ -221,6 +221,7 @@ void menu(sistema *sistema){
             system("cls");
             break;
         case 12:
+            menu_busqueda_ruta_critica(sistema);
             break;
         case 13:
             break;
