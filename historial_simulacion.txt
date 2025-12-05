@@ -1,0 +1,288 @@
+Historial BIOSIM
+Duracion: 20 dias
+
+DIA 1
+ [Territorio 0]:
+   (+) Infectados: 100 101 104 106 109 114 
+ [Territorio 1]:
+   (+) Infectados: 201 212 
+   (R) Recuperados: 210 
+ [Territorio 2]:
+   (+) Infectados: 300 309 313 
+ [Territorio 3]:
+   (+) Infectados: 412 
+   (R) Recuperados: 414 
+ [Territorio 4]:
+   (+) Infectados: 508 
+ [Territorio 6]:
+   (+) Infectados: 700 706 712 
+ [Territorio 7]:
+   (+) Infectados: 803 810 
+   (R) Recuperados: 805 
+ [Territorio 8]:
+   (+) Infectados: 910 
+ [Territorio 9]:
+   (+) Infectados: 1010 
+
+DIA 2
+ [Territorio 0]:
+   (+) Infectados: 102 103 108 110 111 
+ [Territorio 1]:
+   (+) Infectados: 208 
+   (R) Recuperados: 212 
+ [Territorio 2]:
+   (+) Infectados: 301 302 303 304 305 307 310 311 312 
+ [Territorio 3]:
+   (+) Infectados: 413 
+ [Territorio 4]:
+   (+) Infectados: 501 503 504 512 
+ [Territorio 6]:
+   (+) Infectados: 701 708 709 713 714 
+ [Territorio 7]:
+   (+) Infectados: 800 802 804 807 808 809 813 
+ [Territorio 8]:
+   (+) Infectados: 900 904 905 908 909 911 
+ [Territorio 9]:
+   (+) Infectados: 1000 1006 1007 1011 1014 
+
+DIA 3
+ [Territorio 0]:
+   (+) Infectados: 113 
+   (R) Recuperados: 107 
+   (X) Fallecidos: 101 
+ [Territorio 1]:
+   (+) Infectados: 200 204 207 
+ [Territorio 2]:
+   (+) Infectados: 308 314 
+   (R) Recuperados: 300 304 309 311 
+   (X) Fallecidos: 307 
+ [Territorio 3]:
+   (+) Infectados: 400 401 402 404 410 411 
+ [Territorio 4]:
+   (+) Infectados: 500 506 509 511 514 
+ [Territorio 6]:
+   (+) Infectados: 702 704 707 
+   (R) Recuperados: 700 
+   (X) Fallecidos: 709 
+ [Territorio 7]:
+   (+) Infectados: 811 812 
+ [Territorio 8]:
+   (+) Infectados: 906 913 
+   (R) Recuperados: 900 905 908 
+ [Territorio 9]:
+   (+) Infectados: 1001 1002 1003 1005 1013 
+   (R) Recuperados: 1006 
+
+DIA 4
+ [Territorio 1]:
+   (+) Infectados: 205 206 
+   (R) Recuperados: 207 
+ [Territorio 2]:
+   (R) Recuperados: 313 
+ [Territorio 3]:
+   (+) Infectados: 403 405 406 407 409 
+ [Territorio 4]:
+   (+) Infectados: 507 
+   (R) Recuperados: 503 514 
+ [Territorio 6]:
+   (R) Recuperados: 711 
+ [Territorio 7]:
+   (+) Infectados: 806 
+   (R) Recuperados: 807 809 
+ [Territorio 8]:
+   (+) Infectados: 907 912 
+   (X) Fallecidos: 909 
+ [Territorio 9]:
+   (+) Infectados: 1004 1008 
+   (R) Recuperados: 1013 
+
+DIA 5
+ [Territorio 0]:
+   (+) Infectados: 112 
+   (R) Recuperados: 100 
+ [Territorio 1]:
+   (R) Recuperados: 201 
+ [Territorio 2]:
+   (R) Recuperados: 303 305 308 
+ [Territorio 3]:
+   (R) Recuperados: 402 
+ [Territorio 4]:
+   (+) Infectados: 513 
+   (R) Recuperados: 509 512 
+ [Territorio 6]:
+   (+) Infectados: 705 710 
+   (R) Recuperados: 701 
+ [Territorio 7]:
+   (R) Recuperados: 813 
+ [Territorio 9]:
+   (R) Recuperados: 1007 
+
+DIA 6
+ [Territorio 0]:
+   (R) Recuperados: 102 109 
+ [Territorio 1]:
+   (R) Recuperados: 200 
+ [Territorio 2]:
+   (R) Recuperados: 306 
+ [Territorio 3]:
+   (R) Recuperados: 400 413 
+ [Territorio 4]:
+   (+) Infectados: 505 510 
+ [Territorio 6]:
+   (R) Recuperados: 708 
+ [Territorio 7]:
+   (R) Recuperados: 806 
+ [Territorio 8]:
+   (+) Infectados: 903 
+   (R) Recuperados: 914 
+ [Territorio 9]:
+   (R) Recuperados: 1003 
+
+DIA 7
+ [Territorio 0]:
+   (R) Recuperados: 108 
+ [Territorio 1]:
+   (+) Infectados: 211 
+   (R) Recuperados: 206 
+ [Territorio 2]:
+   (R) Recuperados: 301 310 
+ [Territorio 3]:
+   (R) Recuperados: 401 409 
+ [Territorio 4]:
+   (R) Recuperados: 505 
+ [Territorio 6]:
+   (R) Recuperados: 702 
+ [Territorio 7]:
+   (+) Infectados: 801 
+ [Territorio 8]:
+   (R) Recuperados: 906 907 
+ [Territorio 9]:
+   (R) Recuperados: 1008 
+
+DIA 8
+ [Territorio 0]:
+   (R) Recuperados: 106 
+ [Territorio 1]:
+   (R) Recuperados: 208 
+ [Territorio 3]:
+   (R) Recuperados: 403 407 410 
+ [Territorio 4]:
+   (R) Recuperados: 508 
+ [Territorio 6]:
+   (+) Infectados: 703 
+ [Territorio 8]:
+   (+) Infectados: 902 
+   (R) Recuperados: 910 911 
+
+DIA 9
+ [Territorio 0]:
+   (R) Recuperados: 113 
+ [Territorio 1]:
+   (+) Infectados: 214 
+   (R) Recuperados: 211 
+ [Territorio 2]:
+   (R) Recuperados: 302 
+ [Territorio 3]:
+   (R) Recuperados: 405 
+ [Territorio 4]:
+   (X) Fallecidos: 502 
+ [Territorio 6]:
+   (R) Recuperados: 707 
+ [Territorio 7]:
+   (R) Recuperados: 808 811 
+ [Territorio 8]:
+   (R) Recuperados: 913 
+ [Territorio 9]:
+   (R) Recuperados: 1000 1002 
+
+DIA 10
+ [Territorio 3]:
+   (R) Recuperados: 406 
+ [Territorio 4]:
+   (R) Recuperados: 501 
+ [Territorio 6]:
+   (R) Recuperados: 710 
+ [Territorio 7]:
+   (R) Recuperados: 802 803 812 
+ [Territorio 9]:
+   (R) Recuperados: 1005 
+
+DIA 11
+ [Territorio 0]:
+   (R) Recuperados: 114 
+ [Territorio 4]:
+   (R) Recuperados: 511 
+ [Territorio 6]:
+   (R) Recuperados: 705 712 
+
+DIA 12
+ [Territorio 3]:
+   (+) Infectados: 408 
+   (R) Recuperados: 404 
+ [Territorio 4]:
+   (R) Recuperados: 500 504 
+ [Territorio 8]:
+   (R) Recuperados: 904 
+
+DIA 13
+ [Territorio 1]:
+   (R) Recuperados: 204 205 
+ [Territorio 4]:
+   (X) Fallecidos: 506 
+ [Territorio 6]:
+   (R) Recuperados: 714 
+ [Territorio 7]:
+   (R) Recuperados: 800 
+ [Territorio 8]:
+   (R) Recuperados: 912 
+ [Territorio 9]:
+   (R) Recuperados: 1004 1011 
+
+DIA 14
+ [Territorio 0]:
+   (R) Recuperados: 105 
+ [Territorio 3]:
+   (R) Recuperados: 411 
+ [Territorio 4]:
+   (R) Recuperados: 510 
+ [Territorio 7]:
+   (R) Recuperados: 801 
+
+DIA 15
+ [Territorio 9]:
+   (R) Recuperados: 1014 
+
+DIA 16
+ [Territorio 4]:
+   (R) Recuperados: 513 
+ [Territorio 6]:
+   (R) Recuperados: 713 
+
+DIA 17
+ [Territorio 0]:
+   (R) Recuperados: 104 
+ [Territorio 2]:
+   (R) Recuperados: 312 
+ [Territorio 3]:
+   (R) Recuperados: 412 
+ [Territorio 9]:
+   (R) Recuperados: 1001 1010 
+
+DIA 18
+ [Territorio 0]:
+   (R) Recuperados: 111 
+ [Territorio 8]:
+   (R) Recuperados: 903 
+ [Territorio 9]:
+   (R) Recuperados: 1012 
+
+DIA 19
+ [Territorio 4]:
+   (R) Recuperados: 507 
+ [Territorio 6]:
+   (R) Recuperados: 704 
+
+DIA 20
+ Sin cambios registrados.
+
+=== FIN DEL REPORTE ===

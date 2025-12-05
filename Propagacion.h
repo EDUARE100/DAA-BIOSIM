@@ -20,3 +20,4 @@ Cada infectado tiene una probabilidad de morir(letalidad) o recuperarse(gamma)
 
 int indice_cepa(sistema *sistema, int cepa_id);
 void simulacion(sistema *sistema, int dias);
+void simular_un_paso_logico(sistema *sistema);

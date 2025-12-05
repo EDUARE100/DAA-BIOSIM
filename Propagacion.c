@@ -19,12 +19,64 @@ int indice_cepa(sistema *sistema, int cepa_id){
     return -1;
 }
 
+void escribir_reporte(FILE *fp, int id_territorio, int *inf, int n_inf, int *rec, int n_rec, int *fal, int n_fal) {
+    
+    // Imprimimos encabezado del territorio en Pantalla y Archivo
+    printf(" [Territorio %d]:\n", id_territorio);
+    fprintf(fp, " [Territorio %d]:\n", id_territorio);
+
+    // 1. Reportar Nuevos Infectados
+    if (n_inf > 0) {
+        printf("   (+) Infectados: ");
+        fprintf(fp, "   (+) Infectados: ");
+        for(int x = 0; x < n_inf; x++) {
+            printf("%d ", inf[x]);
+            fprintf(fp, "%d ", inf[x]);
+        }
+        printf("\n"); fprintf(fp, "\n");
+    }
+
+    // 2. Reportar Recuperados
+    if (n_rec > 0) {
+        printf("   (R) Recuperados: ");
+        fprintf(fp, "   (R) Recuperados: ");
+        for(int x = 0; x < n_rec; x++) {
+            printf("%d ", rec[x]);
+            fprintf(fp, "%d ", rec[x]);
+        }
+        printf("\n"); fprintf(fp, "\n");
+    }
+
+    // 3. Reportar Fallecidos
+    if (n_fal > 0) {
+        printf("   (X) Fallecidos: ");
+        fprintf(fp, "   (X) Fallecidos: ");
+        for(int x = 0; x < n_fal; x++) {
+            printf("%d ", fal[x]);
+            fprintf(fp, "%d ", fal[x]);
+        }
+        printf("\n"); fprintf(fp, "\n");
+    }
+}
+
 void simulacion(sistema *sistema, int dias){
+
+    FILE *fp = fopen("historial_simulacion.txt", "w");
+    if (fp == NULL) {
+        printf("Error fatal: No se pudo crear el archivo de historial.\n");
+        return;
+    }
+    fprintf(fp,"Historial BIOSIM\n");
+    fprintf(fp,"Duracion: %d dias\n", dias);
+
     for (int i = 1; i <= dias; i++)
     {
+        fprintf(fp,"\nDIA %d\n",i);
         int nuevos_infectados = 0;
         int nuevos_recuperados = 0;
         int nuevos_fallecidos = 0;
+
+        int cambios = 0;
 
         //Iteramos por numero de territorios
         for (int j = 0; j < sistema->numterritorios; j++)
@@ -36,6 +88,15 @@ void simulacion(sistema *sistema, int dias){
             estado *estados_futuros = (estado*)malloc(M * sizeof(estado));
             int *cepas_futuras = (int*)malloc(M * sizeof(int));
             
+            //Necesitamos guardar los ID's de los afectados de cada Día
+            int *list_nuevos_infectados = (int*)malloc(M*sizeof(int));
+            int cant_inf = 0;
+
+            int *list_nuevos_recuperados = (int*)malloc(M*sizeof(int));
+            int cant_rec = 0;
+
+            int *list_nuevos_fallecidos = (int*)malloc(M*sizeof(int));
+            int cant_fal = 0;
 
             //Inicializamos futuro con presente. M está definido como 30 asi que es un O(1) este for
             for (int k = 0; k < M; k++)
@@ -124,31 +185,169 @@ void simulacion(sistema *sistema, int dias){
             // Actualización de los cambios al array del sistema real
             for (int q = 0; q < M; q++)
             {
+                // Si el estado cambió, guardamos el ID en la lista correspondiente
                 if (sistema->territorios[j].personas[q].estado != estados_futuros[q])
                 {
+                    int id_real = sistema->territorios[j].personas[q].id; // El ID del CSV
+
+                    if (estados_futuros[q] == INFECTADO) {
+                        list_nuevos_infectados[cant_inf++] = id_real;
+                        sistema->territorios[j].personas[q].tiempo_contagio = 0; // Reset timer
+                    }
+                    else if (estados_futuros[q] == RECUPERADO) {
+                        list_nuevos_recuperados[cant_rec++] = id_real;
+                    }
+                    else if (estados_futuros[q] == FALLECIDO) {
+                        list_nuevos_fallecidos[cant_fal++] = id_real;
+                    }
+
+                    // Aplicar cambio
                     sistema->territorios[j].personas[q].estado = estados_futuros[q];
                     sistema->territorios[j].personas[q].cepa_id = cepas_futuras[q];
-
-
-                    if (estados_futuros[q] == INFECTADO)
-                    {
-                        sistema->territorios[j].personas[q].tiempo_contagio = 0;
-                    }
-                    
-
                 }
                 
             }
 
+            //Impresión del reporte por territorio
+            if (cant_inf > 0 || cant_rec > 0 || cant_fal > 0) {
+                cambios = 1;
+                // Pasamos el puntero del archivo 'fp' y los datos recolectados
+                escribir_reporte(fp, sistema->territorios[j].territorio_id,list_nuevos_infectados, cant_inf,list_nuevos_recuperados, cant_rec,list_nuevos_fallecidos, cant_fal);
+            }
+
             free(estados_futuros);
             free(cepas_futuras);
+            free(list_nuevos_infectados);
+            free(list_nuevos_recuperados);
+            free(list_nuevos_fallecidos);
         }
         
-        if (nuevos_infectados > 0 ||nuevos_fallecidos > 0)
-        {
-            printf("Dia %d: +%d Infectados, +%d Recuperados, +%d Muertes\n", i, nuevos_infectados, nuevos_recuperados, nuevos_fallecidos);
-        } 
+        if (!cambios) {
+            fprintf(fp, " Sin cambios registrados.\n");
+        }
+         
+    }
+
+    printf("Reporte completo guardado en: historial_simulacion.txt\n");
+    fprintf(fp, "\n=== FIN DEL REPORTE ===\n");
+    
+    // CERRAR EL ARCHIVO (Esto guarda los cambios en disco)
+    fclose(fp);
+}
+
+/* Como haremos la funcion de historial con complejidad O(1), ya que tenemos la limitante de que en la lectura de datos con un numero no especificado de tamaño, necesitamos si o si recorrer hasta llegar al final, pero no sabemos hasta cuanto recorrer lo que lo transforma a O(n), siendo asi el caso, una opción que se encontró es ir imprimiendo en un txt, siendo la función de la escritura individual una función O(1) al ser una salida de output que mantiene un puntero al final de cada linea como funcion append hace que el tiempo sea cosntante.
+
+Para la consulta de algun dato en especifico que se quiera consultar ocupamos una tabla hash que almacene los datos requeridos, haciendo su tiempo de complejidad en busqueda de O(1).
+
+*/
+
+// ============================================================================
+// LÓGICA UNITARIA: AVANZA LA SIMULACIÓN EXACTAMENTE 1 DÍA
+// (Esta es la función que llama tu animación OpenGL)
+// ============================================================================
+
+void simular_un_paso_logico(sistema *sistema) {
+    
+    // BUCLE DE TERRITORIOS (Iteramos sobre todos los lugares)
+    for (int j = 0; j < sistema->numterritorios; j++) {
+        
+        int M = sistema->territorios[j].M;
+        if(M == 0) continue; // Si no hay gente, saltamos
+
+        // --- 1. PREPARAR BUFFERS TEMPORALES (Evitar efecto cascada) ---
+        // Guardamos los cambios en el futuro para aplicarlos todos juntos al final
+        estado *estados_futuros = (estado*)malloc(M * sizeof(estado));
+        int *cepas_futuras = (int*)malloc(M * sizeof(int));
+        
+        // Copiamos el estado actual al buffer como base
+        for (int k = 0; k < M; k++) {
+            estados_futuros[k] = sistema->territorios[j].personas[k].estado;
+            cepas_futuras[k] = sistema->territorios[j].personas[k].cepa_id;
+        }
+
+        // --- 2. CÁLCULO MATEMÁTICO DE CONTAGIOS Y EVOLUCIÓN ---
+        // Recorremos a cada persona para ver si contagia o evoluciona
+        for (int k = 0; k < M; k++) {
+            persona *p = &sistema->territorios[j].personas[k];
+            
+            // Solo los INFECTADOS pueden contagiar o cambiar de estado (recuperarse/morir)
+            if (p->estado == INFECTADO) {
+                
+                // Buscamos datos de la cepa
+                int idx = indice_cepa(sistema, p->cepa_id);
+                if (idx == -1) continue; // Seguridad
+
+                double beta = sistema->cepas[idx].beta;
+                double gamma = sistema->cepas[idx].gamma_recuperacion;
+                double letalidad = sistema->cepas[idx].letalidad;
+
+                // A) INTENTO DE CONTAGIAR A VECINOS
+                for (int vecino = 0; vecino < M; vecino++) {
+                    
+                    // Obtenemos peso de conexión
+                    double peso = sistema->territorios[j].grafopersonas[k][vecino];
+                    
+                    // CONDICIONES:
+                    // 1. Existe conexión (> 0)
+                    // 2. El vecino está SANO hoy
+                    // 3. El vecino sigue SANO en el futuro (nadie más lo ha contagiado hoy)
+                    if (peso > 0 && 
+                        sistema->territorios[j].personas[vecino].estado == SANO &&
+                        estados_futuros[vecino] == SANO) 
+                    {
+                        double riesgo = sistema->territorios[j].personas[vecino].riesgo_inicial;
+                        
+                        // FÓRMULA DEL MODELO: Probabilidad Final
+                        double prob = beta * peso * riesgo; 
+                        if(prob > 1.0) prob = 1.0; // Tope (Clamp)
+
+                        // Tiro de dados
+                        if((double)rand()/RAND_MAX < prob) {
+                            estados_futuros[vecino] = INFECTADO;
+                            cepas_futuras[vecino] = p->cepa_id; // Se contagia con la misma cepa
+                        }
+                    }
+                }
+                
+                // B) EVOLUCIÓN DEL ENFERMO (Recuperación o Muerte)
+                // Primero aumentamos su contador de días enfermo
+                // NOTA: Esto modifica el dato real 'p' directamente porque no afecta a otros.
+                p->tiempo_contagio++; 
+
+                // Probabilidad diaria de salir de la enfermedad (Gamma)
+                if ((double)rand()/RAND_MAX < gamma) {
+                    
+                    // Si sale, ¿muere o vive?
+                    if ((double)rand()/RAND_MAX < letalidad)
+                        estados_futuros[k] = FALLECIDO;
+                    else
+                        estados_futuros[k] = RECUPERADO;
+                }
+            }
+        }
+
+        // --- 3. COMMIT (APLICAR CAMBIOS) ---
+        // Pasamos los datos del buffer 'futuro' a la memoria 'real'
+        for (int q = 0; q < M; q++) {
+            // Solo si hubo cambio de estado
+            if (sistema->territorios[j].personas[q].estado != estados_futuros[q]) {
+                
+                sistema->territorios[j].personas[q].estado = estados_futuros[q];
+                sistema->territorios[j].personas[q].cepa_id = cepas_futuras[q];
+                
+                // Si acaba de infectarse (estaba sano, ahora infectado), reseteamos su reloj
+                if(estados_futuros[q] == INFECTADO) {
+                    sistema->territorios[j].personas[q].tiempo_contagio = 0;
+                }
+            }
+        }
+        
+        // Liberar memoria temporal de este paso
+        free(estados_futuros);
+        free(cepas_futuras);
     }
 }
+
+
 
 #endif
