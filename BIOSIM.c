@@ -305,6 +305,80 @@ void menu(sistema *sistema){
             printf("Saliendo del sistema...\n");
             break;
 
+        case 9:
+            detectar_brotes(sistema);
+            system("pause");
+            system("cls");
+            break;
+
+        case 10:
+            system("cls");
+            int dias = 0;
+            printf("\nSimulacion de Expansion\n");
+            printf("Ingrese los dias de simulacion: ");
+            scanf(" %d", &dias);
+
+            if(dias <= 0){
+                printf("Error. La cantidad de dias debe ser mayor a 0\n");
+                continue;
+            }
+            int opcionx = 0;
+            printf("1. Reporte de Texto (Rapido - Genera Historial TXT)\n");
+            printf("2. Animacion Grafica (Visual - OpenGL)\n");
+            printf("Opcion: ");
+            scanf("%d", &opcionx);
+
+            if (opcionx == 1) {
+                // Modo Texto: Calcula todo rápido y guarda en TXT
+                simulacion(sistema, dias);
+            } 
+            else if (opcionx == 2) {
+                // Modo Gráfico: Abre la ventana y simula paso a paso
+                printf("Abriendo ventana grafica...\n");
+                lanzar_visualizacion(sistema, dias);
+            } 
+            else {
+                printf("Opcion invalida. Cancelando simulacion.\n");
+            }
+            
+            system("pause");
+            system("cls");
+            break;
+        case 11:
+            system("cls");
+            int terr_id;
+            double riesgo_target;
+
+            printf("\n--- SUBPROBLEMA 4: MINIMIZACION DEL RIESGO ---\n");
+            printf("Ingrese ID del Territorio a analizar: ");
+            scanf(" %d", &terr_id);
+            
+            printf("Ingrese Riesgo Objetivo a contener (0.0-10.0 /Riesgos normalizados): ");
+            scanf(" %lf", &riesgo_target);
+
+            minimizar_riesgo_greedy(sistema, terr_id, riesgo_target);
+            
+            system("pause");
+            system("cls");
+            break;
+        case 12:
+            menu_busqueda_ruta_critica(sistema);
+            break;
+        case 13:
+            break;
+        case 14:
+            if(clustering_cepas(sistema) == -1) {
+                puts("Ordenamiento fallido.");
+            }
+            break;
+        case 15:
+            system("cls");
+            // La función espera la dirección de la Tabla Hash
+            consultar_hash(&bd); 
+            system("pause");
+            system("cls");
+            break;
+            break;
         default:
             printf("Opcion no reconocida.\n");
             system("pause");
