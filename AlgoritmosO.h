@@ -1,6 +1,8 @@
 #ifndef AlgoritmosO_H
 #define AlgoritmosO_H
 
+#define ALPHABET_SIZE 128
+
 #include "estructuras.h"
 
 /* funciones: merge sort */
@@ -28,5 +30,25 @@ void init_heap(heap *h, int capacidad);
 void push_min_heap(heap *h, persona dato);
 persona pop_min_heap(heap *h);
 int ordenamiento_por_nombre_asc(sistema *s);
+
+/* funciones: greedy*/
+void minimizar_riesgo_greedy(sistema *s, int terr_id, double riesgo_target);
+int comparar_por_riesgo_desc(const void *a, const void *b) ;
+
+/* funciones: trie */
+typedef struct trienode {
+    struct trienode *hijos[ALPHABET_SIZE];
+    int es_final;
+    int cepa_id; // Guardamos el ID de la cepa
+    double valor_beta; // Guardamos el valor real para referencia
+} trienode;
+
+int clustering_cepas(sistema *s);
+void mostrar_agrupamiento_automatico(trienode *root, sistema *s);
+trienode* construir_clustering_betas(sistema *s);
+void buscar_cluster_beta(trienode *root, char *prefijo_beta, sistema *s);
+void recolectar_cluster(trienode *nodo, sistema *s);
+void insertar_beta(trienode *root, double beta, int cepa_id);
+trienode *crear_nodo(void);
 
 #endif

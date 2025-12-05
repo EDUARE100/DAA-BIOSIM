@@ -390,3 +390,203 @@ int ordenamiento_por_nombre_asc(sistema *s)
     
     return 1;
 }
+
+int comparar_por_riesgo_desc(const void *a, const void *b) {
+    // Convertimos los punteros genéricos a punteros de struct persona
+    const persona *p1 = (const persona *)a;
+    const persona *p2 = (const persona *)b;
+
+    // Criterio Voraz: Queremos que el riesgo más alto (p2) vaya primero.
+    if (p1->riesgo_inicial < p2->riesgo_inicial) {
+        return 1;  // p1 va DESPUÉS de p2
+    } else if (p1->riesgo_inicial > p2->riesgo_inicial) {
+        return -1; // p1 va ANTES de p2
+    } else {
+        return 0;  // Riesgos iguales
+    }
+}
+
+void minimizar_riesgo_greedy(sistema *s, int terr_id, double riesgo_target) {
+    
+    // Verificaciones básicas
+    if (terr_id < 0 || terr_id >= s->numterritorios) {
+        printf("Error: ID de territorio invalido.\n");
+        return;
+    }
+
+    persona *poblacion = s->territorios[terr_id].personas;
+    int M = s->territorios[terr_id].M;
+    double riesgo_total = 0.0; //Variable que usaremos para la cota máxima, para calcular el límite del riesgo total de cada territorio asi para que cuando se ingrese un riesto objetivo de entrada superior al riesgo total acumulado, se transforme en un target alcanzable
+
+    printf("\n--- SUBPROBLEMA 4: MINIMIZACION DEL RIESGO (O(N log N)) ---\n");
+    printf("Territorio a analizar: %d | Objetivo de Riesgo: %.2f\n", terr_id, riesgo_target);
+
+    for(int i = 0; i < M; i++) {
+        riesgo_total += poblacion[i].riesgo_inicial; // Suma de todos los riesgos
+    }
+
+    // 2. VALIDACIÓN DE ENTRADA (Asegurar que el target es alcanzable)
+    if (riesgo_target > riesgo_total) {
+        printf("ADVERTENCIA: El objetivo %.2f es inalcanzable.\n", riesgo_target);
+        printf("Estableciendo el objetivo al maximo riesgo posible: %.2f\n", riesgo_total);
+        riesgo_target = riesgo_total;
+    }
+
+    // --- FASE I: Ordenamiento (El costo O(N log N)) ---
+    // Ordenamos la población in-place por riesgo_inicial de forma descendente.
+    qsort(poblacion, M, sizeof(persona), comparar_por_riesgo_desc); 
+
+    // --- FASE II: Selección Voraz (Recorrido O(M)) ---
+    double riesgo_acumulado = 0.0;
+    int k_aislados = 0;
+    
+    // Recorremos la lista ya ordenada, tomando al mas riesgoso en cada paso.
+    for (int i = 0; i < M; i++) {
+        
+        // El algoritmo voraz se detiene en cuanto alcanza la meta
+        if (riesgo_acumulado >= riesgo_target) {
+            break;
+        }
+        
+        // Decisión Voraz: Sumar el riesgo del individuo actual (el más alto restante)
+        riesgo_acumulado += poblacion[i].riesgo_inicial;
+        k_aislados++;
+        
+        printf("Aislando ID %d (Riesgo %.4f) -> Acumulado: %.4f\n", poblacion[i].id, poblacion[i].riesgo_inicial, riesgo_acumulado);
+    }
+
+    printf("Se aislaron %d personas (el subconjunto minimo) para contener un riesgo total de %.2f.\n", k_aislados, riesgo_acumulado);
+}
+
+trienode *crear_nodo(void)
+{
+    trienode *nodo = (trienode *)calloc(1, sizeof(trienode));
+    if(!nodo) {
+        return NULL;
+    }
+
+    nodo->cepa_id = -1;
+
+    return nodo;
+}
+
+/* * Convierte el double beta a string y lo inserta.
+ * Beta típica: 0.000 a 1.000. 
+ * L = longitud de la cadena (ej. "0.850" -> L=5)
+ */
+void insertar_beta(trienode *root, double beta, int cepa_id)
+{
+    char buffer[20];
+    // Formateamos a 3 decimales para estandarizar la agrupación
+    sprintf(buffer, "%.3f", beta); 
+    
+    trienode *crawl = root;
+    int len = strlen(buffer);
+
+    for(int i = 0; i < len; i++) {
+        int index = (int)buffer[i];
+        if (!crawl->hijos[index]) {
+            crawl->hijos[index] = crear_nodo();
+        }
+        crawl = crawl->hijos[index];
+    }
+    
+    crawl->es_final = 1;
+    crawl->cepa_id = cepa_id;
+    crawl->valor_beta = beta;
+}
+
+/* Función recursiva para recolectar cepas en el subárbol */
+void recolectar_cluster(trienode *nodo, sistema *s)
+{
+    if (nodo->es_final) {
+        // Recuperamos la info completa usando el ID guardado
+        // Nota: Esto asume que el ID coincide con el índice o tienes una función de búsqueda O(1)
+        // Si cepa_id es el índice en el array:
+        if (nodo->cepa_id >= 0 && nodo->cepa_id < s->numcepas) {
+            cepa c = s->cepas[nodo->cepa_id]; 
+            printf("   -> [Beta: %.3f] %s (ID: %d)\n", 
+                   c.beta, c.nombre, c.cepa_id);
+        }
+    }
+
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        if (nodo->hijos[i]) {
+            recolectar_cluster(nodo->hijos[i], s);
+        }
+    }
+}
+
+/*
+ * Busca cepas por rango de propagación (prefijo de beta).
+ * Ej: buscar_cluster_beta(root, "0.9", s) -> Cluster de alta propagación
+ */
+void buscar_cluster_beta(trienode *root, char *prefijo_beta, sistema *s)
+{
+    trienode *crawl = root;
+    int len = strlen(prefijo_beta);
+
+    // 1. Navegar hasta el nodo que representa el prefijo (ej. "0.8")
+    for (int i = 0; i < len; i++) {
+        int index = (int)prefijo_beta[i];
+        if (!crawl->hijos[index]) {
+            printf("No se encontraron cepas en el rango de propagación '%s'.\n", prefijo_beta);
+            return;
+        }
+        crawl = crawl->hijos[index];
+    }
+
+    // 2. Mostrar todas las cepas que cuelgan de este rango
+    printf("\n=== Cluster de Propagación: %s... ===\n", prefijo_beta);
+    printf("Variantes con tasa de contagio similar:\n");
+    recolectar_cluster(crawl, s);
+    printf("======================================\n");
+}
+
+/* Función wrapper para construir todo el Trie desde el sistema */
+trienode* construir_clustering_betas(sistema *s) {
+    trienode *root = crear_nodo();
+    for (int i = 0; i < s->numcepas; i++) {
+        // Insertamos usando el índice 'i' como referencia rápida
+        insertar_beta(root, s->cepas[i].beta, i);
+    }
+    return root;
+}
+
+void mostrar_agrupamiento_automatico(trienode *root, sistema *s) {
+    printf("\n=== CLUSTERING AUTOMÁTICO POR NIVELES DE PROPAGACIÓN ===\n");
+
+    // 1. Acceder a la rama "0" -> "."
+    // Esto asume que los betas son 0.XXX
+    if (root->hijos['0'] && root->hijos['0']->hijos['.']) {
+        trienode *nodo_decimal = root->hijos['0']->hijos['.'];
+
+        // 2. Recorrer dígitos 0-9 para encontrar clusters activos
+        for (char digito = '0'; digito <= '9'; digito++) {
+            if (nodo_decimal->hijos[(int)digito]) {
+                printf("\n[+] Grupo de contagio rango: 0.%c...\n", digito);
+                recolectar_cluster(nodo_decimal->hijos[(int)digito], s);
+            }
+        }
+    }
+    
+    // 3. Caso especial Beta = 1.0 (o cepas que empiezan con 1...)
+    if (root->hijos['1']) {
+        printf("\n[+] Grupo de contagio TOTAL (1.0 o mayor)\n");
+        recolectar_cluster(root->hijos['1'], s);
+    }
+    printf("\n========================================================\n");
+}
+
+int clustering_cepas(sistema *s)
+{
+    if(!s) {
+        return -1;
+    }
+
+    trienode *raiz_betas = construir_clustering_betas(s);
+
+    mostrar_agrupamiento_automatico(raiz_betas, s);
+
+    return 1;
+}

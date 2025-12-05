@@ -150,7 +150,7 @@ void menu(sistema *sistema){
                         system("cls");
                     break;
                 case 3:
-                    if(ordenamiento_por_nombre_asc(&sistema) == -1) {
+                    if(ordenamiento_por_nombre_asc(sistema) == -1) {
                         puts("Ordenamiento fallido.");
                     }
                     break;
