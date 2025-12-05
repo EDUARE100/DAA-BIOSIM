@@ -27,6 +27,8 @@ typedef struct persona{
     estado estado; // 0 si es no infectado, 1 si si lo es
     int tiempo_contagio; //Dias de contagiado. Tipo de datos especifico para el subproblema 1, ordenamiento de tiempo_infeccion ASC
     int cepa_id;
+
+    float x,y; //Campos para la animacion
 }persona;
 
 typedef struct territorio{

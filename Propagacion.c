@@ -241,6 +241,113 @@ Para la consulta de algun dato en especifico que se quiera consultar ocupamos un
 
 */
 
+// ============================================================================
+// LÓGICA UNITARIA: AVANZA LA SIMULACIÓN EXACTAMENTE 1 DÍA
+// (Esta es la función que llama tu animación OpenGL)
+// ============================================================================
+
+void simular_un_paso_logico(sistema *sistema) {
+    
+    // BUCLE DE TERRITORIOS (Iteramos sobre todos los lugares)
+    for (int j = 0; j < sistema->numterritorios; j++) {
+        
+        int M = sistema->territorios[j].M;
+        if(M == 0) continue; // Si no hay gente, saltamos
+
+        // --- 1. PREPARAR BUFFERS TEMPORALES (Evitar efecto cascada) ---
+        // Guardamos los cambios en el futuro para aplicarlos todos juntos al final
+        estado *estados_futuros = (estado*)malloc(M * sizeof(estado));
+        int *cepas_futuras = (int*)malloc(M * sizeof(int));
+        
+        // Copiamos el estado actual al buffer como base
+        for (int k = 0; k < M; k++) {
+            estados_futuros[k] = sistema->territorios[j].personas[k].estado;
+            cepas_futuras[k] = sistema->territorios[j].personas[k].cepa_id;
+        }
+
+        // --- 2. CÁLCULO MATEMÁTICO DE CONTAGIOS Y EVOLUCIÓN ---
+        // Recorremos a cada persona para ver si contagia o evoluciona
+        for (int k = 0; k < M; k++) {
+            persona *p = &sistema->territorios[j].personas[k];
+            
+            // Solo los INFECTADOS pueden contagiar o cambiar de estado (recuperarse/morir)
+            if (p->estado == INFECTADO) {
+                
+                // Buscamos datos de la cepa
+                int idx = indice_cepa(sistema, p->cepa_id);
+                if (idx == -1) continue; // Seguridad
+
+                double beta = sistema->cepas[idx].beta;
+                double gamma = sistema->cepas[idx].gamma_recuperacion;
+                double letalidad = sistema->cepas[idx].letalidad;
+
+                // A) INTENTO DE CONTAGIAR A VECINOS
+                for (int vecino = 0; vecino < M; vecino++) {
+                    
+                    // Obtenemos peso de conexión
+                    double peso = sistema->territorios[j].grafopersonas[k][vecino];
+                    
+                    // CONDICIONES:
+                    // 1. Existe conexión (> 0)
+                    // 2. El vecino está SANO hoy
+                    // 3. El vecino sigue SANO en el futuro (nadie más lo ha contagiado hoy)
+                    if (peso > 0 && 
+                        sistema->territorios[j].personas[vecino].estado == SANO &&
+                        estados_futuros[vecino] == SANO) 
+                    {
+                        double riesgo = sistema->territorios[j].personas[vecino].riesgo_inicial;
+                        
+                        // FÓRMULA DEL MODELO: Probabilidad Final
+                        double prob = beta * peso * riesgo; 
+                        if(prob > 1.0) prob = 1.0; // Tope (Clamp)
+
+                        // Tiro de dados
+                        if((double)rand()/RAND_MAX < prob) {
+                            estados_futuros[vecino] = INFECTADO;
+                            cepas_futuras[vecino] = p->cepa_id; // Se contagia con la misma cepa
+                        }
+                    }
+                }
+                
+                // B) EVOLUCIÓN DEL ENFERMO (Recuperación o Muerte)
+                // Primero aumentamos su contador de días enfermo
+                // NOTA: Esto modifica el dato real 'p' directamente porque no afecta a otros.
+                p->tiempo_contagio++; 
+
+                // Probabilidad diaria de salir de la enfermedad (Gamma)
+                if ((double)rand()/RAND_MAX < gamma) {
+                    
+                    // Si sale, ¿muere o vive?
+                    if ((double)rand()/RAND_MAX < letalidad)
+                        estados_futuros[k] = FALLECIDO;
+                    else
+                        estados_futuros[k] = RECUPERADO;
+                }
+            }
+        }
+
+        // --- 3. COMMIT (APLICAR CAMBIOS) ---
+        // Pasamos los datos del buffer 'futuro' a la memoria 'real'
+        for (int q = 0; q < M; q++) {
+            // Solo si hubo cambio de estado
+            if (sistema->territorios[j].personas[q].estado != estados_futuros[q]) {
+                
+                sistema->territorios[j].personas[q].estado = estados_futuros[q];
+                sistema->territorios[j].personas[q].cepa_id = cepas_futuras[q];
+                
+                // Si acaba de infectarse (estaba sano, ahora infectado), reseteamos su reloj
+                if(estados_futuros[q] == INFECTADO) {
+                    sistema->territorios[j].personas[q].tiempo_contagio = 0;
+                }
+            }
+        }
+        
+        // Liberar memoria temporal de este paso
+        free(estados_futuros);
+        free(cepas_futuras);
+    }
+}
+
 
 
 #endif

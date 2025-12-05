@@ -6,8 +6,9 @@
 #include "DFS.h"
 #include "Propagacion.h"
 #include "hash.h"
+#include "Animacion.h"
 
-// gcc BIOSIM.c load_data.c AlgoritmosO.c DFS.c estructuras.c Propagacion.c hash.c -o BIOSIM
+// gcc BIOSIM.c load_data.c AlgoritmosO.c DFS.c estructuras.c Propagacion.c hash.c Animacion.c -o BIOSIM -lfreeglut -lopengl32 -lglu32
 
 TablaHash bd; //Variable global para el almacenamiento O(1) para ersonas y cepas
 void menu(sistema *sistema);
@@ -178,7 +179,23 @@ void menu(sistema *sistema){
             }
             system("pause");
             system("cls");
+            int opcion10;
+            printf("Desea ver la animacion? 1: SI || 0: NO");
+            scanf(" %d",&opcion10);
+            switch (opcion10)
+                {
+                case 1:
+                    lanzar_visualizacion(sistema);
+                    break;
+
+                case 0:
+                    break;
+                default:
+                    break;
+                }
             break;
+            system("pause");
+            system("cls");
 
         case 11:
             system("cls");
