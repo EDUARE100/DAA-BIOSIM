@@ -267,3 +267,126 @@ void quicksort_def(sistema *sistema){
             free(copia_temp); //LIberamos la copia del array temporal
         }
 }
+
+void free_heap(heap *h)
+{
+    if(h->p) {
+        free(h->p);
+    }
+}
+
+void init_heap(heap *h, int capacidad)
+{
+    if(!h) {
+        return;
+    }
+
+    h->p = (persona *) malloc(capacidad * sizeof(persona));
+    if(!h->p) {
+        return;
+    }
+
+    h->n = 0;
+    h->capacidad = capacidad;
+}
+
+void push_min_heap(heap *h, persona dato)
+{
+    if(!h || h->n == h->capacidad) {
+        return;
+    }
+
+    //primer paso: insertar al final
+    int i = h->n;
+    h->p[i] = dato;
+    h->n++;
+  
+    //flotar
+    while (i > 0 && strcmp(h->p[i].nombre, h->p[(i - 1) / 2].nombre) < 0) {
+        swap(&h->p[i], &h->p[(i - 1) / 2]);
+        i = (i - 1) / 2;
+    }  
+}
+
+persona pop_min_heap(heap *h)
+{
+    persona vacia = {0};
+    if (h->n <= 0) return vacia;
+
+    //guardar el dato a retornar
+    persona temp = h->p[0];
+    //hacer que el ultimo elemento sea el primero
+    h->p[0] = h->p[h->n - 1];
+    h->n--;
+  
+    int i = 0;
+    while (2 * i + 1 < h->n) { // Mientras tenga al menos hijo izquierdo
+        
+        int hijo_menor = 2 * i + 1; // Asumimos izquierdo es menor
+        int hijo_derecho = 2 * i + 2;
+
+        // Si existe hijo derecho y es AUN MENOR que el izquierdo
+        if (hijo_derecho < h->n && strcmp(h->p[hijo_derecho].nombre, h->p[hijo_menor].nombre) < 0) {
+            hijo_menor = hijo_derecho;
+        }
+
+        // Si el padre es mayor que el hijo menor, hundimos
+        if (strcmp(h->p[i].nombre, h->p[hijo_menor].nombre) > 0) {
+            swap(&h->p[i], &h->p[hijo_menor]);
+            i = hijo_menor;
+        } else {
+            break; // Ya está en orden
+        }
+    }
+   
+  return temp;
+}
+
+int ordenamiento_por_nombre_asc(sistema *s)
+{
+    if(!s || s->numterritorios == 0) {
+        return -1;
+    }
+
+    puts("\n======================================================");
+    puts("   REPORTE DE PERSONAS POR NOMBRE (A-Z)   ");
+    puts("======================================================");
+
+    for(int i = 0; i < s->numterritorios; i++) {
+        
+        int M = s->territorios[i].M;
+
+        /* Si no hay personas, salta el territorio */
+        if(M == 0) {
+            printf("\nTerritorio: %s\n", s->territorios[i].nombre);
+            printf("(Sin personas)\n");
+            continue;
+        }
+
+        heap h;
+        init_heap(&h, M);
+
+        for(int k = 0; k < M; k++) {
+            push_min_heap(&h, s->territorios[i].personas[k]);
+        }
+
+        printf("\nTerritorio: %s\n", s->territorios[i].nombre);
+        printf("%-20s | %-10s | %-15s\n", "Nombre", "ID", "Estado Actual");
+        printf("------------------------------------------------------\n");
+
+        while(h.n > 0) {
+            persona p = pop_min_heap(&h);
+
+            printf("%-20s | %-10d | %-15s\n",
+                    p.nombre,
+                    p.id,
+                    // Acceder al array global de estados.
+                    nombres_estados[p.estado]
+            );
+        }
+        
+        free_heap(&h);
+    }
+    
+    return 1;
+}

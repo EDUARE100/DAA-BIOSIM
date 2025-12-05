@@ -106,6 +106,11 @@ void menu(sistema sistema){
                         system("pause");
                         system("cls");
                     break;
+                case 3:
+                    if(ordenamiento_por_nombre_asc(&sistema) == -1) {
+                        puts("Ordenamiento fallido.");
+                    }
+                    break;
                 
                 default:
                         system("cls");
