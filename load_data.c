@@ -101,7 +101,8 @@ int leer_personas_csv(sistema *sistema, const char *filename){
             sistema->territorios[territorio_id].personas[idx].grado_inicial = grado_inicial;
             sistema->territorios[territorio_id].personas[idx].riesgo_inicial = riesgo_inicial;
             sistema->territorios[territorio_id].personas[idx].estado = SANO;
-            sistema->territorios[territorio_id].personas[idx].tiempo_contagio = -1;
+            sistema->territorios[territorio_id].personas[idx].tiempo_contagio = 0;
+            sistema->territorios[territorio_id].personas[idx].cepa_id = -1;
 
             sistema->territorios[territorio_id].M++;
             total_personas++;

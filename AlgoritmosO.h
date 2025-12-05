@@ -15,4 +15,9 @@ int partition(persona arr[], int low, int high);
 int condition(persona a, persona b);
 void swap(persona *a, persona *b);
 
+
+//Algoritmo Greedy para Subproblema 4
+int comparar_por_riesgo_desc(const void *a, const void *b);
+void minimizar_riesgo_greedy(sistema *s, int terr_id, double riesgo_target);
+
 #endif

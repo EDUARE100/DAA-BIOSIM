@@ -17,8 +17,6 @@ void inicializar_sistema(sistema *sistema){
     sistema->numcepas = 0;
     sistema->numsemillas = 0;
 
-    srand(1234);
-
     //Inicialización grafo de territorios
     for (int i = 0; i < MAX_Territorios; i++)
     {
