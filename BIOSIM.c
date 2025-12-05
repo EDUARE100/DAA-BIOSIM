@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "estructuras.h"
 #include "load_data.h"
 #include "AlgoritmosO.h"
@@ -79,12 +80,12 @@ void menu(sistema *sistema){
         printf("7.- Insert\n");
         printf("8.- SUBPROBLEMA 1. Ordenamientos NLOGN\n");
         printf("9.- SUBPROBLEMA 2. Deteccion de Brotes (DFS)\n");
-        printf("10. SUBPROBLEMA 3. Calcular la expansion Paso a Paso (>= nlogn)\n");
-        printf("11.- SUBPROBLEMA 4.- Minimizacion del riesgo total O(n^2)n\n");
-        printf("12.- SUBPROBLEMA 5.- Identificaciion de rutas optimas O((n+m)logn\n");
-        printf("13.- SUBPROBLEMA 6.- Hallar la red minima de vacunacion o aislamiento\n");
-        printf("14.- SUBPROBLEMA 7.- Agrupar variantes segun similitud, genetica o contagio\n");
-        printf("15.- SUBPROBLEMA 8.- Almacenamiento y consultas eficientes O(1)\n");
+        printf("10.- SUBPROBLEMA 3. Calcular la expansion Paso a Paso (>= nlogn)\n");
+        printf("11.- SUBPROBLEMA 4. Minimizacion del riesgo total O(n^2)n\n");
+        printf("12.- SUBPROBLEMA 5. Identificaciion de rutas optimas O((n+m)logn\n");
+        printf("13.- SUBPROBLEMA 6. Hallar la red minima de vacunacion o aislamiento\n");
+        printf("14.- SUBPROBLEMA 7. Agrupar variantes segun similitud, genetica o contagio\n");
+        printf("15.- SUBPROBLEMA 8. Almacenamiento y consultas eficientes O(1)\n");
         printf("0.- Salir\n");
         printf("Ingrese una opcion: ");
         scanf(" %d",&opcion);
@@ -173,30 +174,29 @@ void menu(sistema *sistema){
             if(dias <= 0){
                 printf("Error. La cantidad de dias debe ser mayor a 0\n");
                 continue;
-            }else
-            {
-                simulacion(sistema, dias);
             }
+            int opcionx = 0;
+            printf("1. Reporte de Texto (Rapido - Genera Historial TXT)\n");
+            printf("2. Animacion Grafica (Visual - OpenGL)\n");
+            printf("Opcion: ");
+            scanf("%d", &opcionx);
+
+            if (opcionx == 1) {
+                // Modo Texto: Calcula todo rápido y guarda en TXT
+                simulacion(sistema, dias);
+            } 
+            else if (opcionx == 2) {
+                // Modo Gráfico: Abre la ventana y simula paso a paso
+                printf("Abriendo ventana grafica...\n");
+                lanzar_visualizacion(sistema, dias);
+            } 
+            else {
+                printf("Opcion invalida. Cancelando simulacion.\n");
+            }
+            
             system("pause");
             system("cls");
-            int opcion10;
-            printf("Desea ver la animacion? 1: SI || 0: NO");
-            scanf(" %d",&opcion10);
-            switch (opcion10)
-                {
-                case 1:
-                    lanzar_visualizacion(sistema);
-                    break;
-
-                case 0:
-                    break;
-                default:
-                    break;
-                }
             break;
-            system("pause");
-            system("cls");
-
         case 11:
             system("cls");
             int terr_id;

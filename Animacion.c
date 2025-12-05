@@ -1,4 +1,4 @@
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 #include <math.h>
 #include <stdio.h>
 #include "estructuras.h"
@@ -14,6 +14,7 @@
 sistema *sys_viz;
 int animacion_activa = 0;
 int dia_actual_viz = 0;
+int limite_dias_viz = 0; // Variable meta o limite de dias asignada en el main de BIOSIM
 
 // =============================================================
 // 1. INICIALIZAR POSICIONES (Solo se hace una vez)
@@ -87,7 +88,7 @@ void display() {
             if (p.estado == SANO) glColor3f(0.0, 1.0, 0.0);       // VERDE
             else if (p.estado == INFECTADO) glColor3f(1.0, 0.0, 0.0); // ROJO (Semilla/Infectado)
             else if (p.estado == RECUPERADO) glColor3f(0.0, 0.5, 1.0); // AZUL
-            else glColor3f(0.4, 0.4, 0.4); // GRIS (Fallecido)
+            else if(p.estado == FALLECIDO) glColor3f(1.0, 1.0, 1.0); // Blanco (Fallecido)
 
             glVertex2f(p.x, p.y);
         }
@@ -104,6 +105,14 @@ void display() {
         glRasterPos2f(ANCHO_VENTANA/2 - 20, 25);
         char *texto = "INICIAR";
         for (char *c = texto; *c != '\0'; c++) glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+
+        if (dia_actual_viz >= limite_dias_viz && limite_dias_viz > 0) {
+            glColor3f(1.0, 1.0, 0.0); // Amarillo
+            glRasterPos2f(ANCHO_VENTANA/2 - 40, 70); // Un poco más arriba del botón
+            char *fin = "FINALIZADO";
+            for (char *c = fin; *c != '\0'; c++) glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+        }
+
     } else {
         // Texto del Día
         glColor3f(1.0, 1.0, 1.0);
@@ -121,15 +130,20 @@ void display() {
 // =============================================================
 void timer(int valor) {
     if (animacion_activa) {
-        // LLAMADA A TU LÓGICA MATEMÁTICA (UN SOLO DÍA)
-        // Esta función debe estar en Propagacion.h
-        simular_un_paso_logico(sys_viz); 
-        
-        dia_actual_viz++;
-        glutPostRedisplay(); // Forzar redibujado con nuevos colores
+        //Condicion de parada por dias indicados en BIOSIM main
+        if (dia_actual_viz >= limite_dias_viz) {
+            animacion_activa = 0; // Detener animación
+            printf("--- Fin de la simulacion visual (%d dias alcanzados) ---\n", limite_dias_viz);
+        } 
+        else {
+            // Si no hemos llegado, avanzamos un día
+            simular_un_paso_logico(sys_viz); 
+            dia_actual_viz++;
+            glutPostRedisplay(); // Redibujar
+        }
     }
-    // Repetir cada 500ms (Medio segundo por día)
-    glutTimerFunc(500, timer, 0); 
+    // Repetir cada 700ms (Medio segundo por día)
+    glutTimerFunc(700, timer, 0); 
 }
 
 // =============================================================
@@ -154,9 +168,12 @@ void mouse(int button, int state, int x, int y) {
 // =============================================================
 // 5. FUNCIÓN PRINCIPAL DE VISUALIZACIÓN
 // =============================================================
-void lanzar_visualizacion(sistema *s) {
+void lanzar_visualizacion(sistema *s, int dias_meta) {
     // 1. Preparar datos visuales
     sys_viz = s;
+    limite_dias_viz = dias_meta; // <--- Guardamos el límite
+    dia_actual_viz = 0;          // Reseteamos el contador
+    animacion_activa = 0;
     asignar_posiciones_graficas(s); 
 
     // 2. Configurar GLUT
@@ -165,6 +182,8 @@ void lanzar_visualizacion(sistema *s) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(ANCHO_VENTANA, ALTO_VENTANA);
     glutCreateWindow("BIOSIM - Visualizacion de Propagacion");
+
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 
     // 3. Configurar Vista 2D (Pixel exacto)
     glMatrixMode(GL_PROJECTION);

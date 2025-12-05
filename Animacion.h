@@ -4,6 +4,6 @@
 #include "estructuras.h"
 
 // Solo declaramos la función principal que el main necesita
-void lanzar_visualizacion(sistema *s);
+void lanzar_visualizacion(sistema *s, int dias_meta);
 
 #endif
