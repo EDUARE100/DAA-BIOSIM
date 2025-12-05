@@ -21,7 +21,7 @@ int limite_dias_viz = 0; // Variable meta o limite de dias asignada en el main d
 // =============================================================
 void asignar_posiciones_graficas(sistema *s) {
     // Calculamos una rejilla para los territorios (ej. 3 columnas)
-    int columnas = 4; // Ajusta según cuantos territorios tengas
+    int columnas = 4; // Ajustamos las columnas
     int filas = (s->numterritorios / columnas) + 1;
     
     float ancho_terr = (float)ANCHO_VENTANA / columnas;
@@ -102,7 +102,7 @@ void display() {
         
         // Texto (Negro)
         glColor3f(0.0, 0.0, 0.0);
-        glRasterPos2f(ANCHO_VENTANA/2 - 20, 25);
+        glRasterPos2f(ANCHO_VENTANA/2 - 35, 25);
         char *texto = "INICIAR";
         for (char *c = texto; *c != '\0'; c++) glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
 

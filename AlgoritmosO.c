@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h> 
 
 /*
  * @brief Genera e imprime un reporte de personas ordenado por 'riesgo_inicial'
@@ -391,6 +392,267 @@ int ordenamiento_por_nombre_asc(sistema *s)
     return 1;
 }
 
+// Inicializar la cola con validación robusta
+priorityqueue *crear_pq(int capacidad)
+{
+    priorityqueue *pq = (priorityqueue *)malloc(sizeof(priorityqueue));
+    if(!pq) {
+        return NULL;
+    }
+
+    pq->nodos = (nodopq *)malloc(capacidad * sizeof(nodopq));
+    if(!pq->nodos) {
+        free(pq); // Liberar la estructura si falla el array interno
+        return NULL;
+    }
+
+    pq->tamano = 0;
+    pq->capacidad = capacidad;
+    
+    return pq;
+}
+
+// Intercambiar dos nodos en el heap
+void swap_nodes(nodopq *a, nodopq *b)
+{
+    nodopq temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Insertar en Max-Heap
+void push_pq(priorityqueue *pq, int id, double prob)
+{
+    if (!pq || pq->tamano == pq->capacidad) {
+        return;
+    }
+
+    int i = pq->tamano++;
+    pq->nodos[i].nodo_id = id;
+    pq->nodos[i].probabilidad = prob;
+
+    // Flotar (Up-Heap)
+    while(i > 0) {
+        int padre = (i - 1) / 2;
+        if(pq->nodos[i].probabilidad > pq->nodos[padre].probabilidad) {
+            swap_nodes(&pq->nodos[i], &pq->nodos[padre]);
+            i = padre;
+        } 
+        else {
+            break;
+        }
+    }
+}
+
+// Extraer el nodo con mayor probabilidad
+nodopq pop_pq(priorityqueue *pq)
+{
+    // Retornar un nodo inválido/vacío si la cola está vacía
+    if (!pq || pq->tamano == 0) {
+        nodopq vacio = {-1, -1.0};
+        return vacio;
+    }
+
+    nodopq maxNode = pq->nodos[0];
+    pq->nodos[0] = pq->nodos[--pq->tamano];
+
+    // Hundir (Down-Heap)
+    int i = 0;
+    while(2 * i + 1 < pq->tamano) {
+        int izquierdo = 2 * i + 1;
+        int derecho = 2 * i + 2;
+        int mayor = izquierdo;
+
+        if(derecho < pq->tamano && pq->nodos[derecho].probabilidad > pq->nodos[izquierdo].probabilidad) {
+            mayor = derecho;
+        }
+
+        if(pq->nodos[mayor].probabilidad > pq->nodos[i].probabilidad) {
+            swap_nodes(&pq->nodos[i], &pq->nodos[mayor]);
+            i = mayor;
+        }
+        else {
+            break;
+        }
+    }
+
+    return maxNode;
+}
+
+int es_vacia_pq(priorityqueue *pq)
+{
+    return (pq == NULL || pq->tamano == 0);
+}
+
+void liberar_pq(priorityqueue *pq)
+{
+    if (pq) {
+        if (pq->nodos) free(pq->nodos);
+        free(pq);
+    }
+}
+
+void buscar_ruta_critica(sistema *s, int id_origen, int id_destino) {
+    // 1. Validaciones básicas de punteros e índices
+    if (!s) return;
+    
+    // Asegurar que N no exceda el límite real de memoria (MAX_Territorios)
+    // Esto previene SIGSEGV si numterritorios tiene basura
+    int N = s->numterritorios;
+    if (N > MAX_Territorios) N = MAX_Territorios; 
+
+    if (id_origen < 0 || id_origen >= N || id_destino < 0 || id_destino >= N) {
+        printf("Error: IDs de territorio inválidos (Rango 0-%d).\n", N-1);
+        return;
+    }
+    
+    // Arrays para Dijkstra
+    double *probabilidades = (double*)malloc(N * sizeof(double));
+    int *padres = (int*)malloc(N * sizeof(int));
+    int *visitados = (int*)calloc(N, sizeof(int)); 
+
+    // Verificación de malloc
+    if (!probabilidades || !padres || !visitados) {
+        printf("Error crítico: No se pudo asignar memoria para Dijkstra.\n");
+        if(probabilidades) free(probabilidades);
+        if(padres) free(padres);
+        if(visitados) free(visitados);
+        return;
+    }
+
+    // Inicialización
+    for (int i = 0; i < N; i++) {
+        probabilidades[i] = -1.0; 
+        padres[i] = -1;
+    }
+
+    probabilidades[id_origen] = 1.0;
+
+    // Crear PQ
+    priorityqueue *pq = crear_pq(N * N);
+    if (!pq) {
+        printf("Error crítico: Fallo al crear Priority Queue.\n");
+        free(probabilidades); free(padres); free(visitados);
+        return;
+    }
+    
+    push_pq(pq, id_origen, 1.0);
+
+    // Bucle principal
+    while (!es_vacia_pq(pq)) {
+        nodopq u_node = pop_pq(pq);
+        int u = u_node.nodo_id;
+
+        if (u == -1) break; // Seguridad extra
+
+        if (u_node.probabilidad < probabilidades[u]) continue;
+        if (u == id_destino) break;
+
+        visitados[u] = 1;
+
+        for (int v = 0; v < N; v++) {
+            // Acceso seguro a la matriz
+            double peso = s->grafoterritorios[u][v];
+
+            // CORRECCIÓN DE DATOS:
+            // Si el peso es > 1.0, asumimos que está en formato porcentual (0-100)
+            // y lo normalizamos a (0.0-1.0) para que la matemática de probabilidad funcione.
+            // Esto evita que la probabilidad crezca a infinito y cicle.
+            if (peso > 1.0) {
+                peso /= 100.0;
+            }
+
+            if (peso > 0.0 && u != v) {
+                double nueva_prob = probabilidades[u] * peso;
+
+                if (nueva_prob > probabilidades[v]) {
+                    probabilidades[v] = nueva_prob;
+                    padres[v] = u;
+                    push_pq(pq, v, nueva_prob);
+                }
+            }
+        }
+    }
+
+    // Reporte
+    printf("\n=== RUTA CRÍTICA DE CONTAGIO (Dijkstra) ===\n");
+    printf("Origen: %s -> Destino: %s\n", s->territorios[id_origen].nombre, s->territorios[id_destino].nombre);
+
+    if (probabilidades[id_destino] == -1.0) {
+        printf("Resultado: NO existe ruta de contagio posible.\n");
+    } else {
+        printf("Probabilidad Total: %.6f (%.2f%%)\n", 
+               probabilidades[id_destino], probabilidades[id_destino] * 100.0);
+        
+        printf("Ruta: ");
+        int *ruta = (int*)malloc(N * sizeof(int));
+        if (ruta) {
+            int count = 0;
+            int actual = id_destino;
+            // Protección contra ciclos infinitos al reconstruir (count < N)
+            while (actual != -1 && count < N) { 
+                ruta[count++] = actual;
+                actual = padres[actual];
+            }
+            
+            // Si el ciclo se rompió por el límite, avisar (aunque con la normalización no debería pasar)
+            if (actual != -1 && count == N) {
+               printf(" [Ciclo detectado/Ruta truncada] ");
+            }
+
+            for (int i = count - 1; i >= 0; i--) {
+                printf("[%s]", s->territorios[ruta[i]].nombre);
+                if (i > 0) printf(" -> ");
+            }
+            printf("\n");
+            free(ruta);
+        }
+    }
+    printf("===========================================\n");
+
+    free(probabilidades);
+    free(padres);
+    free(visitados);
+    liberar_pq(pq);
+}
+
+/*
+ * @brief Función de interfaz para que el usuario seleccione la ruta.
+ * Muestra la lista de territorios disponibles y solicita los IDs.
+ */
+void menu_busqueda_ruta_critica(sistema *s)
+{
+    if (!s || s->numterritorios < 2) {
+        printf("No hay suficientes territorios cargados para calcular rutas.\n");
+        return;
+    }
+
+    int origen, destino;
+
+    printf("\n--- BUSQUEDA INTERACTIVA DE RUTA CRITICA ---\n");
+    printf("Lista de Territorios Disponibles:\n");
+    for (int i = 0; i < s->numterritorios && i < MAX_Territorios; i++) {
+        printf("  [%d] %s\n", s->territorios[i].territorio_id, s->territorios[i].nombre);
+    }
+    printf("--------------------------------------------\n");
+
+    printf("Ingrese el ID del territorio de ORIGEN (Foco infeccioso): ");
+    if (scanf("%d", &origen) != 1) {
+        printf("Entrada inválida.\n");
+        while(getchar() != '\n');
+        return;
+    }
+
+    printf("Ingrese el ID del territorio de DESTINO (Objetivo): ");
+    if (scanf("%d", &destino) != 1) {
+        printf("Entrada inválida.\n");
+        while(getchar() != '\n');
+        return;
+    }
+
+    buscar_ruta_critica(s, origen, destino);
+}
+
 int comparar_por_riesgo_desc(const void *a, const void *b) {
     // Convertimos los punteros genéricos a punteros de struct persona
     const persona *p1 = (const persona *)a;
@@ -485,7 +747,7 @@ void insertar_beta(trienode *root, double beta, int cepa_id)
 
     for(int i = 0; i < len; i++) {
         int index = (int)buffer[i];
-        if (!crawl->hijos[index]) {
+        if(!crawl->hijos[index]) {
             crawl->hijos[index] = crear_nodo();
         }
         crawl = crawl->hijos[index];
@@ -501,17 +763,17 @@ void recolectar_cluster(trienode *nodo, sistema *s)
 {
     if (nodo->es_final) {
         // Recuperamos la info completa usando el ID guardado
-        // Nota: Esto asume que el ID coincide con el índice o tienes una función de búsqueda O(1)
+        // Nota: Esto asume que el ID coincide con el índice
         // Si cepa_id es el índice en el array:
-        if (nodo->cepa_id >= 0 && nodo->cepa_id < s->numcepas) {
+        if(nodo->cepa_id >= 0 && nodo->cepa_id < s->numcepas) {
             cepa c = s->cepas[nodo->cepa_id]; 
             printf("   -> [Beta: %.3f] %s (ID: %d)\n", 
                    c.beta, c.nombre, c.cepa_id);
         }
     }
 
-    for (int i = 0; i < ALPHABET_SIZE; i++) {
-        if (nodo->hijos[i]) {
+    for(int i = 0; i < ALPHABET_SIZE; i++) {
+        if(nodo->hijos[i]) {
             recolectar_cluster(nodo->hijos[i], s);
         }
     }
@@ -527,9 +789,9 @@ void buscar_cluster_beta(trienode *root, char *prefijo_beta, sistema *s)
     int len = strlen(prefijo_beta);
 
     // 1. Navegar hasta el nodo que representa el prefijo (ej. "0.8")
-    for (int i = 0; i < len; i++) {
+    for(int i = 0; i < len; i++) {
         int index = (int)prefijo_beta[i];
-        if (!crawl->hijos[index]) {
+        if(!crawl->hijos[index]) {
             printf("No se encontraron cepas en el rango de propagación '%s'.\n", prefijo_beta);
             return;
         }
@@ -547,7 +809,7 @@ void buscar_cluster_beta(trienode *root, char *prefijo_beta, sistema *s)
 trienode* construir_clustering_betas(sistema *s)
 {
     trienode *root = crear_nodo();
-    for (int i = 0; i < s->numcepas; i++) {
+    for(int i = 0; i < s->numcepas; i++) {
         // Insertamos usando el índice 'i' como referencia rápida
         insertar_beta(root, s->cepas[i].beta, i);
     }
@@ -560,12 +822,12 @@ void mostrar_agrupamiento_automatico(trienode *root, sistema *s)
 
     // 1. Acceder a la rama "0" -> "."
     // Esto asume que los betas son 0.XXX
-    if (root->hijos['0'] && root->hijos['0']->hijos['.']) {
+    if(root->hijos['0'] && root->hijos['0']->hijos['.']) {
         trienode *nodo_decimal = root->hijos['0']->hijos['.'];
 
         // 2. Recorrer dígitos 0-9 para encontrar clusters activos
-        for (char digito = '0'; digito <= '9'; digito++) {
-            if (nodo_decimal->hijos[(int)digito]) {
+        for(char digito = '0'; digito <= '9'; digito++) {
+            if(nodo_decimal->hijos[(int)digito]) {
                 printf("\n[+] Grupo de contagio rango: 0.%c...\n", digito);
                 recolectar_cluster(nodo_decimal->hijos[(int)digito], s);
             }
@@ -573,7 +835,7 @@ void mostrar_agrupamiento_automatico(trienode *root, sistema *s)
     }
     
     // 3. Caso especial Beta = 1.0 (o cepas que empiezan con 1...)
-    if (root->hijos['1']) {
+    if(root->hijos['1']) {
         printf("\n[+] Grupo de contagio TOTAL (1.0 o mayor)\n");
         recolectar_cluster(root->hijos['1'], s);
     }
