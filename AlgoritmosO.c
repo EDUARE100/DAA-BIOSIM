@@ -843,7 +843,7 @@ void mostrar_agrupamiento_automatico(trienode *root, sistema *s)
 }
 
 int clustering_cepas(sistema *s)
-{
+{ 
     if(!s) {
         return -1;
     }

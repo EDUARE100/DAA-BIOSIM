@@ -20,7 +20,7 @@ int limite_dias_viz = 0; // Variable meta o limite de dias asignada en el main d
 // 1. INICIALIZAR POSICIONES (Solo se hace una vez)
 // =============================================================
 void asignar_posiciones_graficas(sistema *s) {
-    // Calculamos una rejilla para los territorios (ej. 3 columnas)
+    // Calculamos una rejilla para los territorios
     int columnas = 4; // Ajustamos las columnas
     int filas = (s->numterritorios / columnas) + 1;
     
@@ -42,7 +42,7 @@ void asignar_posiciones_graficas(sistema *s) {
             float offset_y = 20 + rand() % (int)(alto_terr - 40);
             
             s->territorios[t].personas[k].x = x_base + offset_x;
-            // Invertimos Y porque en OpenGL el 0 está abajo (opcional)
+            // Invertimos Y porque en OpenGL el 0 está abajo
             s->territorios[t].personas[k].y = ALTO_VENTANA - (y_base + offset_y);
         }
     }
